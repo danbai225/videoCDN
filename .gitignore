@@ -2,5 +2,5 @@
 logs
 *.log
 videoCDN
-cache
+/cache
 videoCDN.iml
