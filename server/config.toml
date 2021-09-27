@@ -1,0 +1,22 @@
+[server]
+	address        = ":8082"
+	serverRoot     = "web/html"
+	serverAgent    = "videoCDN"
+	logPath        = "./logs/server"
+	nameToUriType  = 2
+	routeOverWrite = true
+[logger]
+    path   = "./logs"
+    level  = "all"
+    stdout = true
+[viewer]
+    path        = "web/template"
+    defaultFile = "index.html"
+[database]
+    link  = "mysql:root:rootdanbai@tcp(39.108.110.44:3306)/video_cdn"
+    debug = true
+    # 数据库日志对象配置
+    [database.logger]
+        Path   = "./logs/sql"
+        Level  = "all"
+        Stdout = true
