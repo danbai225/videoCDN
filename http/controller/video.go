@@ -3,8 +3,8 @@ package controller
 import (
 	logs "github.com/danbai225/go-logs"
 	"github.com/gogf/gf/net/ghttp"
+	m3u8Server "p00q.cn/video_cdn/http/service/m3u8"
 	"strings"
-	m3u8Server "videoCDN/service/m3u8"
 )
 
 func video(r *ghttp.Request) {

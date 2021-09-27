@@ -3,8 +3,8 @@ package main
 import (
 	logs "github.com/danbai225/go-logs"
 	"github.com/gogf/gf/frame/g"
-	"videoCDN/controller"
-	"videoCDN/middleware"
+	"p00q.cn/video_cdn/http/controller"
+	"p00q.cn/video_cdn/http/middleware"
 )
 
 func main() {

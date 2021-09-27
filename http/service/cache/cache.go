@@ -6,10 +6,10 @@ import (
 	logs "github.com/danbai225/go-logs"
 	"io/ioutil"
 	"os"
+	downloadServer "p00q.cn/video_cdn/http/service/download"
+	"p00q.cn/video_cdn/http/utils"
 	"path/filepath"
 	"time"
-	downloadServer "videoCDN/service/download"
-	"videoCDN/utils"
 )
 
 var cacheDir = "./cache"
