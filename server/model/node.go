@@ -5,7 +5,8 @@ import "time"
 type Node struct {
 	base
 	ID                 uint      `gorm:"comment:'ID'" json:"id"`
-	IP                 string    `gorm:"comment:'IP',uindex" json:"ip"`
+	IP                 string    `gorm:"comment:'IP',uniqueIndex" json:"ip"`
+	Port               uint16    `gorm:"comment:'服务端口'" json:"port"`
 	Domain             string    `gorm:"comment:'域名'" json:"domain"`
 	Area               string    `gorm:"comment:'地区'" json:"area"`
 	Bandwidth          uint      `gorm:"comment:'带宽'" json:"bandwidth"`

@@ -6,9 +6,9 @@ import (
 	logs "github.com/danbai225/go-logs"
 	m3u8s "github.com/grafov/m3u8"
 	"net/url"
-	"p00q.cn/video_cdn/http/service/cache"
-	downloadServer "p00q.cn/video_cdn/http/service/download"
-	"p00q.cn/video_cdn/http/utils"
+	"p00q.cn/video_cdn/node/service/cache"
+	downloadServer "p00q.cn/video_cdn/node/service/download"
+	"p00q.cn/video_cdn/node/utils"
 	"strings"
 )
 

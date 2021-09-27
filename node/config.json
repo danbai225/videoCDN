@@ -1,4 +1,6 @@
 {
   "serverAddress": "127.0.0.1:796",
-  "token":"123456"
+  "token":"123456",
+  "port": 8082,
+  "cacheDir": "./cache"
 }

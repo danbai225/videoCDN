@@ -6,25 +6,27 @@ import (
 )
 
 var GlobalConfig Config
+var Path = "./config.json"
 
 type Config struct {
 	ServerAddress string
 	Token         string
+	Port          int
+	CacheDir      string
 }
 
-func LoadConfig(path ...string) error {
+func LoadConfig() error {
 	config := Config{}
-	configPath := "./config.json"
-	if len(path) > 0 && path[0] != "" {
-		configPath = path[0]
-	}
-	data, err := ioutil.ReadFile(configPath)
+	data, err := ioutil.ReadFile(Path)
 	if err != nil {
 		return err
 	}
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		return err
+	}
+	if config.CacheDir == "" {
+		config.CacheDir = "./cache"
 	}
 	GlobalConfig = config
 	return nil

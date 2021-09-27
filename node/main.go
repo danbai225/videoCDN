@@ -2,17 +2,34 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	logs "github.com/danbai225/go-logs"
+	"github.com/gogf/gf/frame/g"
+
 	"p00q.cn/video_cdn/node/config"
+	"p00q.cn/video_cdn/node/controller"
+	"p00q.cn/video_cdn/node/middleware"
 	"p00q.cn/video_cdn/node/service"
 	"p00q.cn/video_cdn/node/task"
 	"time"
 )
 
 func main() {
-	configPath := flag.String("c", "", "指定配置文件路径，默认为./config.json")
+	//启动http服务
+	logs.Info(fmt.Sprintf("启动服务 :%d", config.GlobalConfig.Port))
+	server := g.Server()
+	server.SetPort(config.GlobalConfig.Port)
+	controller.RegRoute(server)
+	middleware.RegMiddleware(server)
+	go server.Run()
+
+	//启动与服务端通信
+	Path := flag.String("c", "", "指定配置文件路径，默认为./config.json")
 	flag.Parse()
-	err := config.LoadConfig(*configPath)
+	if *Path != "" {
+		config.Path = *Path
+	}
+	err := config.LoadConfig()
 	if err != nil {
 		logs.Err(err)
 		return
