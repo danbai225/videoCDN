@@ -6,13 +6,12 @@ import (
 	logs "github.com/danbai225/go-logs"
 	m3u8s "github.com/grafov/m3u8"
 	"net/url"
+	"p00q.cn/video_cdn/node/config"
 	"p00q.cn/video_cdn/node/service/cache"
 	downloadServer "p00q.cn/video_cdn/node/service/download"
 	"p00q.cn/video_cdn/node/utils"
 	"strings"
 )
-
-var host = "http://107.189.14.25:8080"
 
 //解析m3u8文件链接
 func parseM3U8Url(m3u8Url string, mediaType m3u8s.ListType) (*url.URL, interface{}, error) {
@@ -124,7 +123,7 @@ func NewTransit(m3u8Url string) (string, error) {
 	logs.Info("\n", string(data))
 	maUrl := fmt.Sprintf("/video/%s/index.m3u8", videoKey)
 	cache.Cache(maUrl, data)
-	return host + maUrl, nil
+	return config.GlobalConfig.Host + maUrl, nil
 }
 
 // GetResources 获取m3u8资源文件

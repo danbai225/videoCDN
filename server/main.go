@@ -2,7 +2,9 @@ package main
 
 import (
 	"github.com/gogf/gf/frame/g"
+	"p00q.cn/video_cdn/server/controller"
 	"p00q.cn/video_cdn/server/global"
+	"p00q.cn/video_cdn/server/middleware"
 	"p00q.cn/video_cdn/server/model"
 	"p00q.cn/video_cdn/server/service/node"
 )
@@ -11,7 +13,10 @@ func main() {
 	global.InitDB()
 	test()
 	go node.Run()
-	g.Server().Run()
+	server := g.Server()
+	controller.RegRoute(server)
+	middleware.RegMiddleware(server)
+	server.Run()
 }
 func test() {
 	nodes := make([]model.Node, 0)

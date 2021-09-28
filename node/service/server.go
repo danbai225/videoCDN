@@ -1,19 +1,40 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
+
 	"errors"
+
+	"encoding/gob"
 	"github.com/aceld/zinx/znet"
 	logs "github.com/danbai225/go-logs"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/shopspring/decimal"
 	"io"
 	"net"
 	"p00q.cn/video_cdn/node/config"
 	"p00q.cn/video_cdn/node/model"
+	m3u8Server "p00q.cn/video_cdn/node/service/m3u8"
 	"time"
 )
+
+const (
+	pingPong = iota
+	authentication
+	newCache
+	Friday
+	Saturday
+	Sunday
+)
+
+type Msg struct {
+	SessionCode uint64      `json:"session_code"`
+	Err         error       `json:"err"`
+	Data        interface{} `json:"data"`
+}
 
 var server = serverConn{}
 
@@ -23,6 +44,7 @@ type serverConn struct {
 	dp   *znet.DataPack
 }
 
+//连接认证
 func (s *serverConn) connect() error {
 	conn, err := net.Dial("tcp", s.Addr)
 	if err != nil {
@@ -31,7 +53,11 @@ func (s *serverConn) connect() error {
 	s.conn = conn
 	s.dp = znet.NewDataPack()
 	//开始认证
-	err = s.sendMsg(authentication, []byte(config.GlobalConfig.Token))
+	err = s.sendMsg(authentication, msg2byte(Msg{
+		SessionCode: 0,
+		Err:         nil,
+		Data:        config.GlobalConfig.Token,
+	}))
 	if err != nil {
 		return err
 	}
@@ -39,12 +65,15 @@ func (s *serverConn) connect() error {
 	if err != nil {
 		return err
 	}
-	if msg.GetMsgId() != authentication || string(msg.Data) != OK {
+	m := byte2Msg(msg.GetData())
+	if msg.GetMsgId() != authentication || m.Err != nil {
 		_ = conn.Close()
-		return errors.New("认证失败错误的code")
+		return m.Err
 	}
 	return nil
 }
+
+//读取消息
 func (s *serverConn) readMsg() (*znet.Message, error) {
 	//先读出流中的head部分
 	headData := make([]byte, s.dp.GetHeadLen())
@@ -70,11 +99,12 @@ func (s *serverConn) readMsg() (*znet.Message, error) {
 			logs.Err("server unpack data err:", err)
 			return nil, err
 		}
-		logs.Info("==> Recv Msg: ID=", msg.Id, ", len=", msg.DataLen, ", data=", string(msg.Data))
 		return msg, nil
 	}
 	return nil, errors.New("GetDataLen() < 0")
 }
+
+//发送消息
 func (s *serverConn) sendMsg(id uint32, data []byte) error {
 	pack, err := s.dp.Pack(znet.NewMsgPackage(id, data))
 	if err != nil {
@@ -84,11 +114,14 @@ func (s *serverConn) sendMsg(id uint32, data []byte) error {
 	return err
 }
 
+// Ping 发送ping
 func Ping() {
 	if server.conn != nil {
-		server.sendMsg(0, PingData())
+		server.sendMsg(pingPong, PingData())
 	}
 }
+
+// PingData ping数据
 func PingData() []byte {
 	data := model.PingData{}
 	v, err := mem.VirtualMemory()
@@ -99,7 +132,7 @@ func PingData() []byte {
 	}
 	percent, err := cpu.Percent(0, false)
 	if err == nil {
-		data.CPUPercent = percent[0]
+		data.CPUPercent, _ = decimal.NewFromFloat(percent[0]).Round(2).Float64()
 	}
 	usage, err := disk.Usage("./")
 	if err == nil {
@@ -107,29 +140,17 @@ func PingData() []byte {
 		data.AvailableDiskSpace = usage.Free
 		data.DiskSpaceUsed = usage.Used
 	}
+	data.Port = config.GlobalConfig.Port
 	data.Time = time.Now()
 	marshal, _ := json.Marshal(data)
-	logs.Info(string(marshal))
-	return marshal
+	return msg2byte(Msg{
+		SessionCode: 0,
+		Err:         nil,
+		Data:        marshal,
+	})
 }
 
-const (
-	ping = iota
-	pong
-	authentication
-	Thursday
-	Friday
-	Saturday
-	Sunday
-)
-const (
-	OK  = "ok"
-	ERR = "err"
-)
-
-var ERRByte = []byte{101, 114, 114}
-var OKByte = []byte{111, 107}
-
+// Run 运行服务
 func Run() {
 	//连接初始化
 	server.Addr = config.GlobalConfig.ServerAddress
@@ -140,16 +161,49 @@ func Run() {
 		return
 	}
 	logs.Info("连接成功...")
-	var msg *znet.Message
 	for err == nil {
+		var msg *znet.Message
 		msg, err = server.readMsg()
 		if err != nil {
 			logs.Err(err)
 			break
 		}
-		switch msg.GetMsgId() {
-		case pong:
-			logs.Info("pong")
-		}
+		go messageHandling(msg)
+	}
+}
+
+//自定义消息转换
+func msg2byte(m Msg) []byte {
+	var b bytes.Buffer
+	enc := gob.NewEncoder(&b)
+	err := enc.Encode(m)
+	if err != nil {
+		logs.Err(err)
+	}
+	return b.Bytes()
+}
+
+//自定义消息转换
+func byte2Msg(data []byte) Msg {
+	dec := gob.NewDecoder(bytes.NewBuffer(data))
+	var m Msg
+	err := dec.Decode(&m)
+	if err != nil {
+		logs.Err(err)
+	}
+	return m
+}
+
+//消息处理
+func messageHandling(msg *znet.Message) {
+	m := byte2Msg(msg.GetData())
+	switch msg.GetMsgId() {
+	case newCache:
+		rUrl, err := m3u8Server.NewTransit(m.Data.(string))
+		server.sendMsg(newCache, msg2byte(Msg{
+			SessionCode: m.SessionCode,
+			Err:         err,
+			Data:        rUrl,
+		}))
 	}
 }

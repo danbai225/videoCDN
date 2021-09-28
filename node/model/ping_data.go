@@ -10,5 +10,6 @@ type PingData struct {
 	TotalDiskSpace     uint64    `json:"total_disk_space"`     //总磁盘空间
 	DiskSpaceUsed      uint64    `json:"disk_space_used"`      //使用的磁盘空间
 	AvailableDiskSpace uint64    `json:"available_disk_space"` //可使用的磁盘空间
+	Port               int       `json:"port"`
 	Time               time.Time `json:"time"`
 }

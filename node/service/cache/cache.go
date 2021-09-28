@@ -6,32 +6,17 @@ import (
 	logs "github.com/danbai225/go-logs"
 	"io/ioutil"
 	"os"
+	"p00q.cn/video_cdn/node/config"
 	downloadServer "p00q.cn/video_cdn/node/service/download"
 	"p00q.cn/video_cdn/node/utils"
 	"path/filepath"
 	"time"
 )
 
-var cacheDir = "./cache"
 var cacheKeyMap = make(map[string]string)
 
 func init() {
-	if !utils.IsAbsPath(cacheDir) {
-		abs, err := utils.Abs(cacheDir)
-		if err != nil {
-			logs.Err("缓存目录路径在转换绝对路径时遇到问题", err)
-		} else {
-			cacheDir = abs
-		}
-	}
-	err := utils.IsDirExistCreateIt(cacheDir)
-	if err != nil {
-		logs.Err(err)
-	}
-	err = utils.IsDirExistCreateIt(filepath.Join(cacheDir, "tmp"))
-	if err != nil {
-		logs.Err(err)
-	}
+
 }
 func CacheKey(key string, keyVal string) {
 	cacheKeyMap[key] = keyVal
@@ -90,11 +75,11 @@ func getDir(md5 string) string {
 	if len(md5) != 32 {
 		return ""
 	}
-	return filepath.Join(cacheDir, md5[:3])
+	return filepath.Join(config.GlobalConfig.CacheDir, md5[:3])
 }
 func getPath(md5 string) string {
 	if len(md5) != 32 {
 		return ""
 	}
-	return filepath.Join(cacheDir, md5[:3], md5)
+	return filepath.Join(config.GlobalConfig.CacheDir, md5[:3], md5)
 }

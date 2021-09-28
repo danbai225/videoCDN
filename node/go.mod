@@ -9,6 +9,7 @@ require (
 	github.com/grafov/m3u8 v0.11.1
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 	github.com/shirou/gopsutil/v3 v3.21.8
+	github.com/shopspring/decimal v1.2.0
 )
 
 require (

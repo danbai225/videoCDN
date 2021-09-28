@@ -2,7 +2,10 @@ package config
 
 import (
 	"encoding/json"
+	logs "github.com/danbai225/go-logs"
 	"io/ioutil"
+	"p00q.cn/video_cdn/node/utils"
+	"path/filepath"
 )
 
 var GlobalConfig Config
@@ -13,6 +16,7 @@ type Config struct {
 	Token         string
 	Port          int
 	CacheDir      string
+	Host          string
 }
 
 func LoadConfig() error {
@@ -29,5 +33,24 @@ func LoadConfig() error {
 		config.CacheDir = "./cache"
 	}
 	GlobalConfig = config
+	initFunc()
 	return nil
+}
+func initFunc() {
+	if !utils.IsAbsPath(GlobalConfig.CacheDir) {
+		abs, err := utils.Abs(GlobalConfig.CacheDir)
+		if err != nil {
+			logs.Err("缓存目录路径在转换绝对路径时遇到问题", err)
+		} else {
+			GlobalConfig.CacheDir = abs
+		}
+	}
+	err := utils.IsDirExistCreateIt(GlobalConfig.CacheDir)
+	if err != nil {
+		logs.Err(err)
+	}
+	err = utils.IsDirExistCreateIt(filepath.Join(GlobalConfig.CacheDir, "tmp"))
+	if err != nil {
+		logs.Err(err)
+	}
 }
