@@ -78,21 +78,24 @@ func NewTransit(m3u8Url string) (string, error) {
 		if err4 != nil {
 			return "", err4
 		}
-		keyUrl := fmt.Sprintf("/video/%s/list%d.key", videoKey, i)
-		bkurl := mediaList.Key.URI
-		if utils.IsRelativeUrl(bkurl) {
-			if utils.IsRelativeUrl(variant.URI) {
-				bkurl = fmt.Sprintf("%s://%s:%s%s", urlParse.Scheme, urlParse.Host, urlParse.Port(), bkurl)
-			} else {
-				parse, err5 := url.Parse(variant.URI)
-				if err5 != nil {
-					return "", err5
+		bkurl := variant.URI
+		keyUrl := ""
+		if Key != "" {
+			keyUrl = fmt.Sprintf("/video/%s/list%d.key", videoKey, i)
+			if utils.IsRelativeUrl(bkurl) {
+				if utils.IsRelativeUrl(variant.URI) {
+					bkurl = fmt.Sprintf("%s://%s:%s%s", urlParse.Scheme, urlParse.Host, urlParse.Port(), bkurl)
+				} else {
+					parse, err5 := url.Parse(variant.URI)
+					if err5 != nil {
+						return "", err5
+					}
+					bkurl = fmt.Sprintf("%s://%s:%s%s", parse.Scheme, parse.Host, parse.Port(), bkurl)
 				}
-				bkurl = fmt.Sprintf("%s://%s:%s%s", parse.Scheme, parse.Host, parse.Port(), bkurl)
 			}
+			mediaList.Key.URI = keyUrl
+			cache.CacheKey(keyUrl, Key)
 		}
-		mediaList.Key.URI = keyUrl
-		cache.CacheKey(keyUrl, Key)
 		for j := range mediaList.Segments {
 			segment := mediaList.Segments[j]
 			if segment != nil {
@@ -115,7 +118,9 @@ func NewTransit(m3u8Url string) (string, error) {
 		}
 		mediaList.ResetCache()
 		meUrl := fmt.Sprintf("/video/%s/list%d.m3u8", videoKey, i)
-		cache.Cache(meUrl, []byte(strings.ReplaceAll(mediaList.Encode().String(), bkurl, keyUrl)))
+		if keyUrl != "" {
+			cache.Cache(meUrl, []byte(strings.ReplaceAll(mediaList.Encode().String(), bkurl, keyUrl)))
+		}
 		master.Variants[i].URI = meUrl
 	}
 	master.ResetCache()

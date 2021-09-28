@@ -5,9 +5,13 @@ go 1.17
 require (
 	github.com/aceld/zinx v1.0.0
 	github.com/gogf/gf v1.16.6
+	github.com/grafov/m3u8 v0.11.1
+	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/gorm v1.21.15
+
 )
+
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -16,6 +20,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/grokify/html-strip-tags-go v0.0.0-20190921062105-daaa06bf1aaf // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect

@@ -17,6 +17,7 @@ type Config struct {
 	Port          int
 	CacheDir      string
 	Host          string
+	DBFile        string `json:"db_file"`
 }
 
 func LoadConfig() error {
@@ -31,6 +32,9 @@ func LoadConfig() error {
 	}
 	if config.CacheDir == "" {
 		config.CacheDir = "./cache"
+	}
+	if config.DBFile == "" {
+		config.DBFile = "./data.db"
 	}
 	GlobalConfig = config
 	initFunc()

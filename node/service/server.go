@@ -2,11 +2,8 @@ package service
 
 import (
 	"bytes"
-	"encoding/json"
-
-	"errors"
-
 	"encoding/gob"
+	"errors"
 	"github.com/aceld/zinx/znet"
 	logs "github.com/danbai225/go-logs"
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -16,18 +13,10 @@ import (
 	"io"
 	"net"
 	"p00q.cn/video_cdn/node/config"
-	"p00q.cn/video_cdn/node/model"
 	m3u8Server "p00q.cn/video_cdn/node/service/m3u8"
+	"p00q.cn/video_cdn/node/utils"
+	"p00q.cn/video_cdn/server/model/model"
 	"time"
-)
-
-const (
-	pingPong = iota
-	authentication
-	newCache
-	Friday
-	Saturday
-	Sunday
 )
 
 type Msg struct {
@@ -53,7 +42,7 @@ func (s *serverConn) connect() error {
 	s.conn = conn
 	s.dp = znet.NewDataPack()
 	//开始认证
-	err = s.sendMsg(authentication, msg2byte(Msg{
+	err = s.sendMsg(model.Authentication, msg2byte(Msg{
 		SessionCode: 0,
 		Err:         nil,
 		Data:        config.GlobalConfig.Token,
@@ -66,7 +55,7 @@ func (s *serverConn) connect() error {
 		return err
 	}
 	m := byte2Msg(msg.GetData())
-	if msg.GetMsgId() != authentication || m.Err != nil {
+	if msg.GetMsgId() != model.Authentication || m.Err != nil {
 		_ = conn.Close()
 		return m.Err
 	}
@@ -117,13 +106,13 @@ func (s *serverConn) sendMsg(id uint32, data []byte) error {
 // Ping 发送ping
 func Ping() {
 	if server.conn != nil {
-		server.sendMsg(pingPong, PingData())
+		_ = server.sendMsg(model.PingPong, PingData())
 	}
 }
 
 // PingData ping数据
 func PingData() []byte {
-	data := model.PingData{}
+	data := model.Node{}
 	v, err := mem.VirtualMemory()
 	if err == nil {
 		data.TotalMemory = v.Total
@@ -140,13 +129,14 @@ func PingData() []byte {
 		data.AvailableDiskSpace = usage.Free
 		data.DiskSpaceUsed = usage.Used
 	}
-	data.Port = config.GlobalConfig.Port
+	data.Port = uint16(config.GlobalConfig.Port)
 	data.Time = time.Now()
-	marshal, _ := json.Marshal(data)
+	data.Send = NetWorkState.Send
+	data.Receive = NetWorkState.Receive
 	return msg2byte(Msg{
 		SessionCode: 0,
 		Err:         nil,
-		Data:        marshal,
+		Data:        data,
 	})
 }
 
@@ -172,38 +162,48 @@ func Run() {
 	}
 }
 
-//自定义消息转换
 func msg2byte(m Msg) []byte {
-	var b bytes.Buffer
-	enc := gob.NewEncoder(&b)
-	err := enc.Encode(m)
+	var bufferr bytes.Buffer
+	PerEncod := gob.NewEncoder(&bufferr) //1.创建一个编码器
+	err := PerEncod.Encode(&m)           //编码
 	if err != nil {
 		logs.Err(err)
 	}
-	return b.Bytes()
+	return bufferr.Bytes()
 }
 
-//自定义消息转换
 func byte2Msg(data []byte) Msg {
-	dec := gob.NewDecoder(bytes.NewBuffer(data))
-	var m Msg
-	err := dec.Decode(&m)
+	var msg Msg
+	Decoder := gob.NewDecoder(bytes.NewReader(data)) //创建一个反编码器
+	err := Decoder.Decode(&msg)
 	if err != nil {
 		logs.Err(err)
 	}
-	return m
+	return msg
 }
 
 //消息处理
 func messageHandling(msg *znet.Message) {
 	m := byte2Msg(msg.GetData())
 	switch msg.GetMsgId() {
-	case newCache:
+	case model.NewCache:
 		rUrl, err := m3u8Server.NewTransit(m.Data.(string))
-		server.sendMsg(newCache, msg2byte(Msg{
+		_ = server.sendMsg(model.NewCache, msg2byte(Msg{
 			SessionCode: m.SessionCode,
 			Err:         err,
 			Data:        rUrl,
+		}))
+	case model.DelayTest:
+		//测速ping
+		ping := utils.Ping(m.Data.(string))
+		_ = server.sendMsg(model.DelayTest, msg2byte(Msg{
+			SessionCode: m.SessionCode,
+			Err:         nil,
+			Data: model.Delay{
+				Host:   m.Data.(string),
+				NodeIP: "",
+				Val:    uint(ping),
+			},
 		}))
 	}
 }

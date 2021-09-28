@@ -3,12 +3,12 @@ package node
 import (
 	"bytes"
 	"encoding/gob"
-	"encoding/json"
 	"errors"
 	"fmt"
 	zutils "github.com/aceld/zinx/utils"
 	"github.com/aceld/zinx/ziface"
 	"github.com/aceld/zinx/znet"
+	"github.com/gogf/gf/container/gset"
 	"github.com/gogf/gf/os/gcache"
 	"math/rand"
 	"p00q.cn/video_cdn/server/global"
@@ -17,8 +17,9 @@ import (
 	"time"
 )
 
-var callMap = gcache.New()
+var nodeCache = gcache.New()
 var server ziface.IServer
+var nodeSet = gset.NewSet(true)
 
 func Run() {
 	zutils.GlobalObject.Name = "videoCDNServer"
@@ -27,30 +28,24 @@ func Run() {
 	//1 创建一个server句柄
 	server = znet.NewServer()
 	//2 配置路由
-	server.AddRouter(pingPong, &pongRouter{})
-	server.AddRouter(authentication, &authenticationRouter{})
-	server.AddRouter(newCache, &newCacheRouter{})
+	server.AddRouter(model.PingPong, &pongRouter{})
+	server.AddRouter(model.Authentication, &authenticationRouter{})
+	server.AddRouter(model.NewCache, &newCacheRouter{})
+	server.AddRouter(model.DelayTest, &delayTestRouter{})
 	server.SetOnConnStop(stopHook)
 	server.SetOnConnStart(startHook)
 	//3 开启服务
 	server.Serve()
 }
 
-const (
-	pingPong = iota
-	authentication
-	newCache
-	Friday
-	Saturday
-	Sunday
-)
-
 func startHook(connection ziface.IConnection) {
+	nodeSet.Add(connection)
 	ip := getIP(connection)
 	global.MySQL.Model(&model.Node{}).Where("ip=?", ip).Update("on_line", true)
 	global.Cache.Set(fmt.Sprintf("ConnID-%s", ip), connection.GetConnID(), 0)
 }
 func stopHook(connection ziface.IConnection) {
+	nodeSet.Remove(connection)
 	ip := getIP(connection)
 	global.MySQL.Model(&model.Node{}).Where("ip=?", ip).Update("on_line", false)
 	global.Cache.Remove(fmt.Sprintf("ConnID-%s", ip))
@@ -65,14 +60,15 @@ func (r *pongRouter) Handle(request ziface.IRequest) {
 		return
 	}
 	data := request.GetData()
-	node := model.Node{}
-	_ = json.Unmarshal(byte2Msg(data).Data.([]byte), &node)
+	msg := byte2Msg(data)
+	node := msg.Data.(model.Node)
 	node.OnLine = true
-	err := global.MySQL.Where("ip=?", getIP(request.GetConnection())).Updates(&node).Error
+	ip := getIP(request.GetConnection())
+	err := global.MySQL.Where("ip=?", ip).Updates(&node).Error
 	if err != nil {
 		global.Logs.Error(err)
 	}
-	err = request.GetConnection().SendBuffMsg(pingPong, msg2byte(Msg{
+	err = request.GetConnection().SendBuffMsg(model.PingPong, msg2byte(Msg{
 		SessionCode: 0,
 		Err:         nil,
 		Data:        nil,
@@ -80,6 +76,7 @@ func (r *pongRouter) Handle(request ziface.IRequest) {
 	if err != nil {
 		global.Logs.Error(err)
 	}
+	setNodeRate(ip, node.Send, node.Receive)
 }
 
 //认证处理
@@ -90,7 +87,7 @@ type authenticationRouter struct {
 func (r *authenticationRouter) Handle(request ziface.IRequest) {
 	data := request.GetData()
 	if len(data) == 0 {
-		_ = request.GetConnection().SendMsg(authentication, msg2byte(Msg{
+		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
 			SessionCode: 0,
 			Err:         errors.New("数据len=0"),
 			Data:        nil,
@@ -103,7 +100,7 @@ func (r *authenticationRouter) Handle(request ziface.IRequest) {
 	var node model.Node
 	err := global.MySQL.Model(&model.Node{}).Where("token=?", token).Take(&node).Error
 	if err != nil {
-		_ = request.GetConnection().SendMsg(authentication, msg2byte(Msg{
+		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
 			SessionCode: 0,
 			Err:         err,
 			Data:        nil,
@@ -113,7 +110,7 @@ func (r *authenticationRouter) Handle(request ziface.IRequest) {
 	}
 
 	if !strings.Contains(request.GetConnection().RemoteAddr().String(), node.IP) {
-		_ = request.GetConnection().SendMsg(authentication, msg2byte(Msg{
+		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
 			SessionCode: 0,
 			Err:         errors.New("ip不存在"),
 			Data:        nil,
@@ -121,7 +118,7 @@ func (r *authenticationRouter) Handle(request ziface.IRequest) {
 		request.GetConnection().Stop()
 		return
 	}
-	_ = request.GetConnection().SendMsg(authentication, msg2byte(Msg{
+	_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
 		SessionCode: 0,
 		Err:         nil,
 		Data:        nil,
@@ -152,23 +149,23 @@ func getIP(conn ziface.IConnection) string {
 	return property.(string)
 }
 func msg2byte(m Msg) []byte {
-	var b bytes.Buffer
-	enc := gob.NewEncoder(&b)
-	err := enc.Encode(m)
+	var bufferr bytes.Buffer
+	PerEncod := gob.NewEncoder(&bufferr) //1.创建一个编码器
+	err := PerEncod.Encode(&m)           //编码
 	if err != nil {
 		global.Logs.Error(err)
 	}
-	return b.Bytes()
+	return bufferr.Bytes()
 }
 
 func byte2Msg(data []byte) Msg {
-	dec := gob.NewDecoder(bytes.NewBuffer(data))
-	var m Msg
-	err := dec.Decode(&m)
+	var msg Msg
+	Decoder := gob.NewDecoder(bytes.NewReader(data)) //创建一个反编码器
+	err := Decoder.Decode(&msg)
 	if err != nil {
 		global.Logs.Error(err)
 	}
-	return m
+	return msg
 }
 
 type Msg struct {
@@ -194,21 +191,21 @@ func NewCache(url, ip string) (string, error) {
 		return "", err
 	}
 	SessionCode := rand.Uint64()
-	conn.SendMsg(newCache, msg2byte(Msg{
+	conn.SendMsg(model.NewCache, msg2byte(Msg{
 		SessionCode: SessionCode,
 		Err:         nil,
 		Data:        url,
 	}))
 	cacheKey := fmt.Sprintf("newCache-%d", SessionCode)
-	callMap.Set(cacheKey, nil, time.Minute)
+	nodeCache.Set(cacheKey, nil, time.Minute)
 	for {
 		time.Sleep(time.Millisecond * 50)
-		get, err2 := callMap.Get(cacheKey)
+		get, err2 := nodeCache.Get(cacheKey)
 		if err2 != nil {
 			return "", err2
 		}
 		if get != nil {
-			callMap.Remove(cacheKey)
+			nodeCache.Remove(cacheKey)
 			return get.(Msg).Data.(string), get.(Msg).Err
 		}
 	}
@@ -225,5 +222,65 @@ func (r *newCacheRouter) Handle(request ziface.IRequest) {
 	}
 	msg := byte2Msg(request.GetData())
 	cacheKey := fmt.Sprintf("newCache-%d", msg.SessionCode)
-	callMap.Set(cacheKey, msg, time.Minute)
+	nodeCache.Set(cacheKey, msg, time.Minute)
+}
+
+// DelayTest 下发每个node对host测ping
+func DelayTest(host string) {
+	nodeSet.Walk(func(item interface{}) interface{} {
+		item.(ziface.IConnection).SendMsg(model.DelayTest, msg2byte(Msg{
+			SessionCode: 0,
+			Err:         nil,
+			Data:        host,
+		}))
+		return item
+	})
+}
+
+//测ping处理
+type delayTestRouter struct {
+	znet.BaseRouter
+}
+
+func (r *delayTestRouter) Handle(request ziface.IRequest) {
+	if !verification(request.GetConnection()) {
+		return
+	}
+	ip := getIP(request.GetConnection())
+	msg := byte2Msg(request.GetData())
+	delay := msg.Data.(model.Delay)
+	delay.NodeIP = ip
+	var count int64
+	global.MySQL.Model(&model.Delay{}).Where("node_ip=? AND host=?", ip, delay.Host).Count(&count)
+	if count > 0 {
+		global.MySQL.Model(&model.Delay{}).Where("node_ip=? AND host=?", ip, delay.Host).Update("val", delay.Val)
+	} else {
+		global.MySQL.Model(&model.Delay{}).Create(&delay)
+	}
+}
+
+//节点速率相关方法
+type rate struct {
+	Send    uint64 `json:"send"`    //最近1s所发送的字节数
+	Receive uint64 `json:"receive"` //最近1s所接收的字节数
+}
+
+func setNodeRate(ip string, send, receive uint64) {
+	key := fmt.Sprintf("rate-%s", ip)
+	//contains, err := nodeCache.Contains(key)
+	//if !contains||err!=nil {
+	//	nodeCache.Set()
+	//}
+	nodeCache.Set(key, rate{
+		Send:    send,
+		Receive: receive,
+	}, 0)
+}
+func getNodeRate(ip string) rate {
+	key := fmt.Sprintf("rate-%s", ip)
+	get, err := nodeCache.Get(key)
+	if err != nil {
+		return rate{}
+	}
+	return get.(rate)
 }
