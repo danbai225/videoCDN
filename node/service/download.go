@@ -1,4 +1,4 @@
-package download
+package service
 
 import (
 	"github.com/levigross/grequests"

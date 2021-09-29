@@ -1,4 +1,4 @@
-package cache
+package service
 
 import (
 	"errors"
@@ -8,28 +8,13 @@ import (
 	"os"
 	"p00q.cn/video_cdn/comm/utils"
 	"p00q.cn/video_cdn/node/config"
-	downloadServer "p00q.cn/video_cdn/node/service/download"
 	"path/filepath"
 	"time"
 )
 
-var cacheKeyMap = make(map[string]string)
-
-func init() {
-
-}
-func CacheKey(key string, keyVal string) {
-	cacheKeyMap[key] = keyVal
-}
-func GetCacheKey(key string) string {
-	if v, has := cacheKeyMap[key]; has {
-		return v
-	}
-	return ""
-}
 func CacheFormUrl(url string) ([]byte, error) {
 	now := time.Now()
-	data, err := downloadServer.Download(url)
+	data, err := Download(url)
 	seconds1 := time.Now().Sub(now).Seconds()
 	if err != nil {
 		return nil, err

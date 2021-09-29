@@ -19,7 +19,6 @@ import (
 	"p00q.cn/video_cdn/comm/model"
 	"p00q.cn/video_cdn/comm/utils"
 	"p00q.cn/video_cdn/node/config"
-	m3u8Server "p00q.cn/video_cdn/node/service/m3u8"
 	"time"
 )
 
@@ -195,12 +194,7 @@ func messageHandling(msg *znet.Message) {
 	}
 	switch msg.GetMsgId() {
 	case model.NewCacheData:
-		rUrl, err := m3u8Server.NewTransit(m.Data.(string))
-		_ = server.sendMsg(model.NewCacheData, msg2byte(Msg{
-			SessionCode: m.SessionCode,
-			Err:         err,
-			Data:        rUrl,
-		}))
+		updateCache(m.Data.([]model.Data))
 	case model.DelayTest:
 		//测速ping
 		ping := utils.Ping(m.Data.(string))
@@ -256,12 +250,4 @@ func GetVideoCacheData(videoKey string) []model.Data {
 		return make([]model.Data, 0)
 	}
 	return msg.Data.([]model.Data)
-}
-func init() {
-	go func() {
-		time.Sleep(time.Second)
-		data := GetVideoCacheData("38bccf977f7917abeb36fb8f57d4efa6")
-		logs.Info(len(data))
-	}()
-	//server unpack err: too large msg data received
 }

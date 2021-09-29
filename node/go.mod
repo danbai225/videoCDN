@@ -6,7 +6,6 @@ require (
 	github.com/aceld/zinx v1.0.0
 	github.com/danbai225/go-logs v0.0.7
 	github.com/gogf/gf v1.16.6
-	github.com/grafov/m3u8 v0.11.1
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 	github.com/shirou/gopsutil/v3 v3.21.8
 	github.com/shopspring/decimal v1.2.0
