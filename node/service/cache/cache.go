@@ -6,9 +6,9 @@ import (
 	logs "github.com/danbai225/go-logs"
 	"io/ioutil"
 	"os"
+	"p00q.cn/video_cdn/comm/utils"
 	"p00q.cn/video_cdn/node/config"
 	downloadServer "p00q.cn/video_cdn/node/service/download"
-	"p00q.cn/video_cdn/node/utils"
 	"path/filepath"
 	"time"
 )

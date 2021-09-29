@@ -11,7 +11,7 @@ require (
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
 	github.com/shirou/gopsutil/v3 v3.21.8
 	github.com/shopspring/decimal v1.2.0
-	p00q.cn/video_cdn/server/model v0.0.0
+	p00q.cn/video_cdn/comm v0.0.0
 )
 
 require (
@@ -51,4 +51,4 @@ require (
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
-replace p00q.cn/video_cdn/server/model => ../server
+replace p00q.cn/video_cdn/comm => ../comm

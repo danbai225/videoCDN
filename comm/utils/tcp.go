@@ -1,7 +1,6 @@
 package utils
 
 import (
-	logs "github.com/danbai225/go-logs"
 	"net"
 	"time"
 )
@@ -12,7 +11,6 @@ func CheckPort(ip string, port string) bool {
 	if err == nil {
 		return true
 	}
-	logs.Info("主机：", ip, " 端口:", port, "无法链接，详情：", err.Error())
 	defer func() {
 		if conn != nil {
 			conn.Close()

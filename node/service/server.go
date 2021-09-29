@@ -4,18 +4,21 @@ import (
 	"bytes"
 	"encoding/gob"
 	"errors"
+	"fmt"
+	"github.com/aceld/zinx/ziface"
 	"github.com/aceld/zinx/znet"
 	logs "github.com/danbai225/go-logs"
+	"github.com/gogf/gf/container/gmap"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shopspring/decimal"
 	"io"
 	"net"
+	"p00q.cn/video_cdn/comm/model"
+	"p00q.cn/video_cdn/comm/utils"
 	"p00q.cn/video_cdn/node/config"
 	m3u8Server "p00q.cn/video_cdn/node/service/m3u8"
-	"p00q.cn/video_cdn/node/utils"
-	"p00q.cn/video_cdn/server/model/model"
 	"time"
 )
 
@@ -186,9 +189,9 @@ func byte2Msg(data []byte) Msg {
 func messageHandling(msg *znet.Message) {
 	m := byte2Msg(msg.GetData())
 	switch msg.GetMsgId() {
-	case model.NewCache:
+	case model.NewCacheData:
 		rUrl, err := m3u8Server.NewTransit(m.Data.(string))
-		_ = server.sendMsg(model.NewCache, msg2byte(Msg{
+		_ = server.sendMsg(model.NewCacheData, msg2byte(Msg{
 			SessionCode: m.SessionCode,
 			Err:         err,
 			Data:        rUrl,
@@ -206,4 +209,33 @@ func messageHandling(msg *znet.Message) {
 			},
 		}))
 	}
+}
+
+var msgChanMap = gmap.New(true)
+
+func sendAMessageAndWaitForAResponse(conn ziface.IConnection, msgID uint32, msg Msg, duration time.Duration) Msg {
+	//conn.SendMsg(msgID,msg2byte(msg))
+	tick := time.Tick(duration)
+	msgC := make(chan Msg)
+	msgChanMap.Set(fmt.Sprintf("%d%d", msgID, msg.SessionCode), msgC)
+	defer func() {
+		msgChanMap.Remove(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
+		close(msgC)
+	}()
+	select {
+	case <-tick:
+		return Msg{Err: errors.New("WaitTimeOUT")}
+	case m := <-msgC:
+		return m
+	}
+}
+func whetherThereIsAWaitingRecipient(msgID uint32, msg Msg) bool {
+	get := msgChanMap.Get(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
+	if get != nil {
+		go func() {
+			get.(chan Msg) <- msg
+		}()
+		return true
+	}
+	return false
 }

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	logs "github.com/danbai225/go-logs"
 	"io/ioutil"
-	"p00q.cn/video_cdn/node/utils"
+	"p00q.cn/video_cdn/comm/utils"
 	"path/filepath"
 )
 

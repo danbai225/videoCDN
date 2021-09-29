@@ -8,11 +8,12 @@ import (
 	zutils "github.com/aceld/zinx/utils"
 	"github.com/aceld/zinx/ziface"
 	"github.com/aceld/zinx/znet"
+	"github.com/gogf/gf/container/gmap"
 	"github.com/gogf/gf/container/gset"
 	"github.com/gogf/gf/os/gcache"
 	"math/rand"
+	"p00q.cn/video_cdn/comm/model"
 	"p00q.cn/video_cdn/server/global"
-	"p00q.cn/video_cdn/server/model"
 	"strings"
 	"time"
 )
@@ -20,6 +21,7 @@ import (
 var nodeCache = gcache.New()
 var server ziface.IServer
 var nodeSet = gset.NewSet(true)
+var nodeMap = make(map[string]model.Node)
 
 func Run() {
 	zutils.GlobalObject.Name = "videoCDNServer"
@@ -30,7 +32,7 @@ func Run() {
 	//2 配置路由
 	server.AddRouter(model.PingPong, &pongRouter{})
 	server.AddRouter(model.Authentication, &authenticationRouter{})
-	server.AddRouter(model.NewCache, &newCacheRouter{})
+	server.AddRouter(model.NewCacheData, &newCacheDataRouter{})
 	server.AddRouter(model.DelayTest, &delayTestRouter{})
 	server.SetOnConnStop(stopHook)
 	server.SetOnConnStart(startHook)
@@ -43,12 +45,21 @@ func startHook(connection ziface.IConnection) {
 	ip := getIP(connection)
 	global.MySQL.Model(&model.Node{}).Where("ip=?", ip).Update("on_line", true)
 	global.Cache.Set(fmt.Sprintf("ConnID-%s", ip), connection.GetConnID(), 0)
+	node := model.Node{}
+	global.MySQL.Model(&node).Where("ip=?", ip).Take(&node)
+	nodeMap[ip] = node
 }
 func stopHook(connection ziface.IConnection) {
 	nodeSet.Remove(connection)
 	ip := getIP(connection)
 	global.MySQL.Model(&model.Node{}).Where("ip=?", ip).Update("on_line", false)
 	global.Cache.Remove(fmt.Sprintf("ConnID-%s", ip))
+}
+func GetNodeInfoByIP(ip string) model.Node {
+	if m, has := nodeMap[ip]; has {
+		return m
+	}
+	return model.Node{}
 }
 
 type pongRouter struct {
@@ -185,51 +196,47 @@ func getNodeConnByIP(ip string) (ziface.IConnection, error) {
 	}
 	return get, nil
 }
-func NewCache(url, ip string) (string, error) {
+
+// NewCacheData 从数据库中查取缓存对应的url数据，给到节点
+func NewCacheData(videoKey, ip string) {
 	conn, err := getNodeConnByIP(ip)
 	if err != nil {
-		return "", err
+		return
 	}
-	SessionCode := rand.Uint64()
-	conn.SendMsg(model.NewCache, msg2byte(Msg{
-		SessionCode: SessionCode,
+	data := make([]model.Data, 0)
+	global.MySQL.Model(&model.Data{}).Where("video_key=?", videoKey).Find(&data)
+	conn.SendMsg(model.NewCacheData, msg2byte(Msg{
+		SessionCode: 0,
 		Err:         nil,
-		Data:        url,
+		Data:        data,
 	}))
-	cacheKey := fmt.Sprintf("newCache-%d", SessionCode)
-	nodeCache.Set(cacheKey, nil, time.Minute)
-	for {
-		time.Sleep(time.Millisecond * 50)
-		get, err2 := nodeCache.Get(cacheKey)
-		if err2 != nil {
-			return "", err2
-		}
-		if get != nil {
-			nodeCache.Remove(cacheKey)
-			return get.(Msg).Data.(string), get.(Msg).Err
-		}
-	}
 }
 
 //新缓存处理
-type newCacheRouter struct {
+type newCacheDataRouter struct {
 	znet.BaseRouter
 }
 
-func (r *newCacheRouter) Handle(request ziface.IRequest) {
+func (r *newCacheDataRouter) Handle(request ziface.IRequest) {
 	if !verification(request.GetConnection()) {
 		return
 	}
 	msg := byte2Msg(request.GetData())
-	cacheKey := fmt.Sprintf("newCache-%d", msg.SessionCode)
-	nodeCache.Set(cacheKey, msg, time.Minute)
+	data := make([]model.Data, 0)
+	global.MySQL.Model(&model.Data{}).Where("video_key=?", msg.Data.(string)).Find(&data)
+	request.GetConnection().SendMsg(model.NewCacheData, msg2byte(Msg{
+		SessionCode: msg.SessionCode,
+		Err:         nil,
+		Data:        data,
+	}))
 }
 
 // DelayTest 下发每个node对host测ping
 func DelayTest(host string) {
+	sid := rand.Uint64()
 	nodeSet.Walk(func(item interface{}) interface{} {
 		item.(ziface.IConnection).SendMsg(model.DelayTest, msg2byte(Msg{
-			SessionCode: 0,
+			SessionCode: sid,
 			Err:         nil,
 			Data:        host,
 		}))
@@ -250,6 +257,10 @@ func (r *delayTestRouter) Handle(request ziface.IRequest) {
 	msg := byte2Msg(request.GetData())
 	delay := msg.Data.(model.Delay)
 	delay.NodeIP = ip
+	cacheKey := fmt.Sprintf("delayTest-%d", msg.SessionCode)
+	_, _ = nodeCache.GetOrSetFuncLock(cacheKey, func() (interface{}, error) {
+		return delay, nil
+	}, time.Minute)
 	var count int64
 	global.MySQL.Model(&model.Delay{}).Where("node_ip=? AND host=?", ip, delay.Host).Count(&count)
 	if count > 0 {
@@ -283,4 +294,33 @@ func getNodeRate(ip string) rate {
 		return rate{}
 	}
 	return get.(rate)
+}
+
+var msgChanMap = gmap.New(true)
+
+func sendAMessageAndWaitForAResponse(conn ziface.IConnection, msgID uint32, msg Msg, duration time.Duration) Msg {
+	//conn.SendMsg(msgID,msg2byte(msg))
+	tick := time.Tick(duration)
+	msgC := make(chan Msg)
+	msgChanMap.Set(fmt.Sprintf("%d%d", msgID, msg.SessionCode), msgC)
+	defer func() {
+		msgChanMap.Remove(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
+		close(msgC)
+	}()
+	select {
+	case <-tick:
+		return Msg{Err: errors.New("WaitTimeOUT")}
+	case m := <-msgC:
+		return m
+	}
+}
+func whetherThereIsAWaitingRecipient(msgID uint32, msg Msg) bool {
+	get := msgChanMap.Get(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
+	if get != nil {
+		go func() {
+			get.(chan Msg) <- msg
+		}()
+		return true
+	}
+	return false
 }

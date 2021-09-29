@@ -3,7 +3,7 @@ package model
 const (
 	PingPong = iota
 	Authentication
-	NewCache
+	NewCacheData
 	DelayTest
 	Saturday
 	Sunday

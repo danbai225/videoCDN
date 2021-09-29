@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gogf/gf/frame/g"
+	"p00q.cn/video_cdn/comm/model"
 	"p00q.cn/video_cdn/server/controller"
 	"p00q.cn/video_cdn/server/global"
 	"p00q.cn/video_cdn/server/middleware"
-	"p00q.cn/video_cdn/server/model"
 	"p00q.cn/video_cdn/server/service/node"
 )
 

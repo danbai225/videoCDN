@@ -14,8 +14,8 @@ var (
 			"Accept":          "*/*",
 			"Accept-Encoding": "*",
 			"Accept-Language": "zh-Hans;q=1",
-			"Host":            "tool.liumingye.cn",
-			"Referer":         "https://www.google.com/",
+			"Host":            "www.breakvip.com",
+			"Referer":         "http://www.breakvip.com/",
 		},
 	}
 )

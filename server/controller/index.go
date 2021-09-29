@@ -6,7 +6,7 @@ import (
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gcache"
 	"p00q.cn/video_cdn/server/global"
-	nodeserver "p00q.cn/video_cdn/server/service/node"
+	m3u8Server "p00q.cn/video_cdn/server/service/m3u8"
 )
 
 var Index = &indexApi{}
@@ -25,7 +25,7 @@ func (a *indexApi) Index(r *ghttp.Request) {
 func GetNewUrl(r *ghttp.Request) {
 	value := r.GetQueryString("url", "")
 	if value != "" {
-		transit, err := nodeserver.NewCache(value, "127.0.0.1")
+		transit, err := m3u8Server.CacheM3u8(value)
 		if err != nil {
 			global.Logs.Error(err)
 			return

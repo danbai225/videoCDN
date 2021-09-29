@@ -9,6 +9,7 @@ var ExportModel = []interface{}{
 	&Node{},
 	&Cache{},
 	&Delay{},
+	&Data{},
 }
 
 type base struct {
@@ -19,4 +20,5 @@ type base struct {
 func init() {
 	gob.RegisterName("Node", Node{})
 	gob.RegisterName("Delay", Delay{})
+	gob.RegisterName("Data", &Data{})
 }

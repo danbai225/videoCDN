@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"log"
-	"p00q.cn/video_cdn/server/model"
+	"p00q.cn/video_cdn/comm/model"
 	"time"
 )
 
