@@ -15,13 +15,11 @@ import (
 func CacheFormUrl(url string) ([]byte, error) {
 	now := time.Now()
 	data, err := Download(url)
-	seconds1 := time.Now().Sub(now).Seconds()
+	logs.Info("cache", url, fmt.Sprintf("%0.2f", time.Now().Sub(now).Seconds()))
 	if err != nil {
 		return nil, err
 	}
 	go Cache(url, data)
-	seconds2 := time.Now().Sub(now).Seconds()
-	logs.Info(fmt.Sprintf("%.2f %.2f", seconds1, seconds2))
 	return data, nil
 }
 func Cache(key string, data []byte) error {
