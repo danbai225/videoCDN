@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/aceld/zinx v1.0.0
 	github.com/danbai225/go-logs v0.0.7
-	github.com/go-ping/ping v0.0.0-20210911151512-381826476871
 	github.com/gogf/gf v1.16.6
 	github.com/grafov/m3u8 v0.11.1
 	github.com/levigross/grequests v0.0.0-20190908174114-253788527a1a
@@ -21,6 +20,7 @@ require (
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
+	github.com/go-ping/ping v0.0.0-20210911151512-381826476871 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/goccy/go-json v0.7.4 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect
@@ -34,13 +34,6 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/tidwall/btree v0.6.0 // indirect
-	github.com/tidwall/gjson v1.8.0 // indirect
-	github.com/tidwall/grect v0.1.2 // indirect
-	github.com/tidwall/match v1.0.3 // indirect
-	github.com/tidwall/pretty v1.1.0 // indirect
-	github.com/tidwall/rtred v0.1.2 // indirect
-	github.com/tidwall/tinyqueue v0.1.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	go.opentelemetry.io/otel v1.0.0-RC2 // indirect
@@ -51,4 +44,5 @@ require (
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
+
 replace p00q.cn/video_cdn/comm => ../comm

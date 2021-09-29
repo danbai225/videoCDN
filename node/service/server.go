@@ -5,7 +5,7 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"github.com/aceld/zinx/ziface"
+	zutils "github.com/aceld/zinx/utils"
 	"github.com/aceld/zinx/znet"
 	logs "github.com/danbai225/go-logs"
 	"github.com/gogf/gf/container/gmap"
@@ -14,6 +14,7 @@ import (
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shopspring/decimal"
 	"io"
+	"math/rand"
 	"net"
 	"p00q.cn/video_cdn/comm/model"
 	"p00q.cn/video_cdn/comm/utils"
@@ -146,6 +147,7 @@ func PingData() []byte {
 // Run 运行服务
 func Run() {
 	//连接初始化
+	zutils.GlobalObject.MaxPacketSize = 1024 * 1024 * 4
 	server.Addr = config.GlobalConfig.ServerAddress
 	logs.Info("开始连接服务端...")
 	err := server.connect()
@@ -188,6 +190,9 @@ func byte2Msg(data []byte) Msg {
 //消息处理
 func messageHandling(msg *znet.Message) {
 	m := byte2Msg(msg.GetData())
+	if whetherThereIsAWaitingRecipient(msg.GetMsgId(), m) {
+		return
+	}
 	switch msg.GetMsgId() {
 	case model.NewCacheData:
 		rUrl, err := m3u8Server.NewTransit(m.Data.(string))
@@ -213,8 +218,8 @@ func messageHandling(msg *znet.Message) {
 
 var msgChanMap = gmap.New(true)
 
-func sendAMessageAndWaitForAResponse(conn ziface.IConnection, msgID uint32, msg Msg, duration time.Duration) Msg {
-	//conn.SendMsg(msgID,msg2byte(msg))
+func sendAMessageAndWaitForAResponse(msgID uint32, msg Msg, duration time.Duration) Msg {
+	server.sendMsg(msgID, msg2byte(msg))
 	tick := time.Tick(duration)
 	msgC := make(chan Msg)
 	msgChanMap.Set(fmt.Sprintf("%d%d", msgID, msg.SessionCode), msgC)
@@ -238,4 +243,25 @@ func whetherThereIsAWaitingRecipient(msgID uint32, msg Msg) bool {
 		return true
 	}
 	return false
+}
+
+func GetVideoCacheData(videoKey string) []model.Data {
+	msg := sendAMessageAndWaitForAResponse(model.NewCacheData, Msg{
+		SessionCode: rand.Uint64(),
+		Err:         nil,
+		Data:        videoKey,
+	}, time.Second*5)
+	if msg.Err != nil {
+		logs.Err(msg.Err)
+		return make([]model.Data, 0)
+	}
+	return msg.Data.([]model.Data)
+}
+func init() {
+	go func() {
+		time.Sleep(time.Second)
+		data := GetVideoCacheData("38bccf977f7917abeb36fb8f57d4efa6")
+		logs.Info(len(data))
+	}()
+	//server unpack err: too large msg data received
 }

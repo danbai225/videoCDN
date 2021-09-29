@@ -9,7 +9,7 @@ func TestCache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cache, err := getCache("123")
+	cache, err := GetCache("123")
 	if err != nil {
 		t.Fatal(err)
 	}

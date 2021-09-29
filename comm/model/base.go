@@ -20,5 +20,6 @@ type base struct {
 func init() {
 	gob.RegisterName("Node", Node{})
 	gob.RegisterName("Delay", Delay{})
-	gob.RegisterName("Data", &Data{})
+	gob.RegisterName("Data", Data{})
+	gob.RegisterName("DataArray", []Data{})
 }

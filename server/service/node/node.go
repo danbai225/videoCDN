@@ -26,6 +26,7 @@ var nodeMap = make(map[string]model.Node)
 func Run() {
 	zutils.GlobalObject.Name = "videoCDNServer"
 	zutils.GlobalObject.TcpPort = 7960
+	zutils.GlobalObject.MaxPacketSize = 1024 * 1024 * 4
 
 	//1 创建一个server句柄
 	server = znet.NewServer()
