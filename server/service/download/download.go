@@ -15,7 +15,7 @@ var (
 			"Accept-Encoding": "*",
 			"Accept-Language": "zh-Hans;q=1",
 			"Host":            "www.breakvip.com",
-			"Referer":         "http://www.breakvip.com/",
+			"Referer":         "https://www.breakvip.com/",
 		},
 	}
 )
