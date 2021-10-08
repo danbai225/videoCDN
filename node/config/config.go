@@ -16,7 +16,8 @@ type Config struct {
 	Token         string
 	Port          int
 	CacheDir      string
-	Host          string
+	CertFile      string `json:"cert_file"`
+	KeyFile       string `json:"key_file"`
 	DBFile        string `json:"db_file"`
 }
 

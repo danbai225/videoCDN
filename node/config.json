@@ -2,7 +2,5 @@
   "serverAddress": "127.0.0.1:7960",
   "token":"123456",
   "port": 8083,
-  "cacheDir": "./cache",
-  "host":"http://107.189.14.25:8080",
-  "db_file": "./data.db"
+  "cacheDir": "./cache"
 }

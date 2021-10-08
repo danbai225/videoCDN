@@ -1,7 +1,7 @@
 package model
 
 type Cache struct {
-	base
+	Base
 	ID       uint   `gorm:"comment:'ID'" json:"id"`
 	NodeIP   string `gorm:"comment:'size:32;NodeIP;index'" json:"node_ip"`
 	Host     string `gorm:"size:128;comment:'源资源host ts文件'" json:"host"`

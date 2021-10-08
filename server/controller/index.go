@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/gogf/gf/container/gmap"
 	"github.com/gogf/gf/container/gset"
+	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gcache"
 	"p00q.cn/video_cdn/server/global"
@@ -27,9 +28,10 @@ func GetNewUrl(r *ghttp.Request) {
 	if value != "" {
 		transit, err := m3u8Server.CacheM3u8(value)
 		if err != nil {
+			_ = r.Response.WriteJson(g.Map{"err": err.Error(), "code": 1})
 			global.Logs.Error(err)
 			return
 		}
-		r.Response.Write(transit)
+		_ = r.Response.WriteJson(g.Map{"err": "", "code": 0, "url": transit})
 	}
 }

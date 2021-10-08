@@ -3,7 +3,6 @@ package node
 import (
 	"bytes"
 	"encoding/gob"
-	"errors"
 	"fmt"
 	zutils "github.com/aceld/zinx/utils"
 	"github.com/aceld/zinx/ziface"
@@ -80,9 +79,9 @@ func (r *pongRouter) Handle(request ziface.IRequest) {
 	if err != nil {
 		global.Logs.Error(err)
 	}
-	err = request.GetConnection().SendBuffMsg(model.PingPong, msg2byte(Msg{
+	err = request.GetConnection().SendBuffMsg(model.PingPong, msg2byte(model.Msg{
 		SessionCode: 0,
-		Err:         nil,
+		Err:         "",
 		Data:        nil,
 	}))
 	if err != nil {
@@ -99,9 +98,9 @@ type authenticationRouter struct {
 func (r *authenticationRouter) Handle(request ziface.IRequest) {
 	data := request.GetData()
 	if len(data) == 0 {
-		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
+		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(model.Msg{
 			SessionCode: 0,
-			Err:         errors.New("数据len=0"),
+			Err:         "数据len=0",
 			Data:        nil,
 		}))
 		request.GetConnection().Stop()
@@ -112,27 +111,26 @@ func (r *authenticationRouter) Handle(request ziface.IRequest) {
 	var node model.Node
 	err := global.MySQL.Model(&model.Node{}).Where("token=?", token).Take(&node).Error
 	if err != nil {
-		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
+		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(model.Msg{
 			SessionCode: 0,
-			Err:         err,
+			Err:         err.Error(),
 			Data:        nil,
 		}))
 		request.GetConnection().Stop()
 		return
 	}
-
 	if !strings.Contains(request.GetConnection().RemoteAddr().String(), node.IP) {
-		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
+		_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(model.Msg{
 			SessionCode: 0,
-			Err:         errors.New("ip不存在"),
+			Err:         "ip不存在",
 			Data:        nil,
 		}))
 		request.GetConnection().Stop()
 		return
 	}
-	_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(Msg{
+	_ = request.GetConnection().SendMsg(model.Authentication, msg2byte(model.Msg{
 		SessionCode: 0,
-		Err:         nil,
+		Err:         "",
 		Data:        nil,
 	}))
 	request.GetConnection().SetProperty("auth", true)
@@ -160,7 +158,7 @@ func getIP(conn ziface.IConnection) string {
 	}
 	return property.(string)
 }
-func msg2byte(m Msg) []byte {
+func msg2byte(m model.Msg) []byte {
 	var bufferr bytes.Buffer
 	PerEncod := gob.NewEncoder(&bufferr) //1.创建一个编码器
 	err := PerEncod.Encode(&m)           //编码
@@ -170,20 +168,14 @@ func msg2byte(m Msg) []byte {
 	return bufferr.Bytes()
 }
 
-func byte2Msg(data []byte) Msg {
-	var msg Msg
+func byte2Msg(data []byte) model.Msg {
+	var msg model.Msg
 	Decoder := gob.NewDecoder(bytes.NewReader(data)) //创建一个反编码器
 	err := Decoder.Decode(&msg)
 	if err != nil {
 		global.Logs.Error(err)
 	}
 	return msg
-}
-
-type Msg struct {
-	SessionCode uint64      `json:"session_code"`
-	Err         error       `json:"err"`
-	Data        interface{} `json:"data"`
 }
 
 func getNodeConnByIP(ip string) (ziface.IConnection, error) {
@@ -206,9 +198,9 @@ func NewCacheData(videoKey, ip string) {
 	}
 	data := make([]model.Data, 0)
 	global.MySQL.Model(&model.Data{}).Where("video_key=?", videoKey).Find(&data)
-	conn.SendMsg(model.NewCacheData, msg2byte(Msg{
+	conn.SendMsg(model.NewCacheData, msg2byte(model.Msg{
 		SessionCode: 0,
-		Err:         nil,
+		Err:         "",
 		Data:        data,
 	}))
 }
@@ -225,9 +217,9 @@ func (r *newCacheDataRouter) Handle(request ziface.IRequest) {
 	msg := byte2Msg(request.GetData())
 	data := make([]model.Data, 0)
 	global.MySQL.Model(&model.Data{}).Where("video_key=?", msg.Data.(string)).Find(&data)
-	request.GetConnection().SendMsg(model.NewCacheData, msg2byte(Msg{
+	request.GetConnection().SendMsg(model.NewCacheData, msg2byte(model.Msg{
 		SessionCode: msg.SessionCode,
-		Err:         nil,
+		Err:         "",
 		Data:        data,
 	}))
 }
@@ -236,9 +228,9 @@ func (r *newCacheDataRouter) Handle(request ziface.IRequest) {
 func DelayTest(host string) {
 	sid := rand.Uint64()
 	nodeSet.Walk(func(item interface{}) interface{} {
-		item.(ziface.IConnection).SendMsg(model.DelayTest, msg2byte(Msg{
+		item.(ziface.IConnection).SendMsg(model.DelayTest, msg2byte(model.Msg{
 			SessionCode: sid,
-			Err:         nil,
+			Err:         "",
 			Data:        host,
 		}))
 		return item
@@ -299,10 +291,10 @@ func getNodeRate(ip string) rate {
 
 var msgChanMap = gmap.New(true)
 
-func sendAMessageAndWaitForAResponse(conn ziface.IConnection, msgID uint32, msg Msg, duration time.Duration) Msg {
+func sendAMessageAndWaitForAResponse(conn ziface.IConnection, msgID uint32, msg model.Msg, duration time.Duration) model.Msg {
 	//conn.SendMsg(msgID,msg2byte(msg))
 	tick := time.Tick(duration)
-	msgC := make(chan Msg)
+	msgC := make(chan model.Msg)
 	msgChanMap.Set(fmt.Sprintf("%d%d", msgID, msg.SessionCode), msgC)
 	defer func() {
 		msgChanMap.Remove(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
@@ -310,16 +302,16 @@ func sendAMessageAndWaitForAResponse(conn ziface.IConnection, msgID uint32, msg 
 	}()
 	select {
 	case <-tick:
-		return Msg{Err: errors.New("WaitTimeOUT")}
+		return model.Msg{Err: "WaitTimeOUT"}
 	case m := <-msgC:
 		return m
 	}
 }
-func whetherThereIsAWaitingRecipient(msgID uint32, msg Msg) bool {
+func whetherThereIsAWaitingRecipient(msgID uint32, msg model.Msg) bool {
 	get := msgChanMap.Get(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
 	if get != nil {
 		go func() {
-			get.(chan Msg) <- msg
+			get.(chan model.Msg) <- msg
 		}()
 		return true
 	}

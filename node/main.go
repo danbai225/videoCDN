@@ -5,6 +5,7 @@ import (
 	"fmt"
 	logs "github.com/danbai225/go-logs"
 	"github.com/gogf/gf/frame/g"
+	"log"
 	"p00q.cn/video_cdn/node/service"
 	"p00q.cn/video_cdn/node/task"
 	"time"
@@ -15,6 +16,7 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	//启动与服务端通信
 	Path := flag.String("c", "", "指定配置文件路径，默认为./config.json")
 	flag.Parse()
@@ -41,5 +43,8 @@ func main() {
 	server.SetPort(config.GlobalConfig.Port)
 	controller.RegRoute(server)
 	middleware.RegMiddleware(server)
+	if config.GlobalConfig.CertFile != "" {
+		server.EnableHTTPS(config.GlobalConfig.CertFile, config.GlobalConfig.KeyFile)
+	}
 	server.Run()
 }

@@ -22,12 +22,6 @@ import (
 	"time"
 )
 
-type Msg struct {
-	SessionCode uint64      `json:"session_code"`
-	Err         error       `json:"err"`
-	Data        interface{} `json:"data"`
-}
-
 var server = serverConn{}
 
 type serverConn struct {
@@ -45,9 +39,9 @@ func (s *serverConn) connect() error {
 	s.conn = conn
 	s.dp = znet.NewDataPack()
 	//开始认证
-	err = s.sendMsg(model.Authentication, msg2byte(Msg{
+	err = s.sendMsg(model.Authentication, msg2byte(model.Msg{
 		SessionCode: 0,
-		Err:         nil,
+		Err:         "",
 		Data:        config.GlobalConfig.Token,
 	}))
 	if err != nil {
@@ -58,9 +52,9 @@ func (s *serverConn) connect() error {
 		return err
 	}
 	m := byte2Msg(msg.GetData())
-	if msg.GetMsgId() != model.Authentication || m.Err != nil {
+	if msg.GetMsgId() != model.Authentication || m.Err != "" {
 		_ = conn.Close()
-		return m.Err
+		return errors.New(m.Err)
 	}
 	return nil
 }
@@ -136,9 +130,9 @@ func PingData() []byte {
 	data.Time = time.Now()
 	data.Send = NetWorkState.Send
 	data.Receive = NetWorkState.Receive
-	return msg2byte(Msg{
+	return msg2byte(model.Msg{
 		SessionCode: 0,
-		Err:         nil,
+		Err:         "",
 		Data:        data,
 	})
 }
@@ -166,7 +160,7 @@ func Run() {
 	}
 }
 
-func msg2byte(m Msg) []byte {
+func msg2byte(m model.Msg) []byte {
 	var bufferr bytes.Buffer
 	PerEncod := gob.NewEncoder(&bufferr) //1.创建一个编码器
 	err := PerEncod.Encode(&m)           //编码
@@ -176,8 +170,8 @@ func msg2byte(m Msg) []byte {
 	return bufferr.Bytes()
 }
 
-func byte2Msg(data []byte) Msg {
-	var msg Msg
+func byte2Msg(data []byte) model.Msg {
+	var msg model.Msg
 	Decoder := gob.NewDecoder(bytes.NewReader(data)) //创建一个反编码器
 	err := Decoder.Decode(&msg)
 	if err != nil {
@@ -198,9 +192,9 @@ func messageHandling(msg *znet.Message) {
 	case model.DelayTest:
 		//测速ping
 		ping := utils.Ping(m.Data.(string))
-		_ = server.sendMsg(model.DelayTest, msg2byte(Msg{
+		_ = server.sendMsg(model.DelayTest, msg2byte(model.Msg{
 			SessionCode: m.SessionCode,
-			Err:         nil,
+			Err:         "",
 			Data: model.Delay{
 				Host:   m.Data.(string),
 				NodeIP: "",
@@ -212,10 +206,10 @@ func messageHandling(msg *znet.Message) {
 
 var msgChanMap = gmap.New(true)
 
-func sendAMessageAndWaitForAResponse(msgID uint32, msg Msg, duration time.Duration) Msg {
+func sendAMessageAndWaitForAResponse(msgID uint32, msg model.Msg, duration time.Duration) model.Msg {
 	server.sendMsg(msgID, msg2byte(msg))
 	tick := time.Tick(duration)
-	msgC := make(chan Msg)
+	msgC := make(chan model.Msg)
 	msgChanMap.Set(fmt.Sprintf("%d%d", msgID, msg.SessionCode), msgC)
 	defer func() {
 		msgChanMap.Remove(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
@@ -223,16 +217,16 @@ func sendAMessageAndWaitForAResponse(msgID uint32, msg Msg, duration time.Durati
 	}()
 	select {
 	case <-tick:
-		return Msg{Err: errors.New("WaitTimeOUT")}
+		return model.Msg{Err: "WaitTimeOUT"}
 	case m := <-msgC:
 		return m
 	}
 }
-func whetherThereIsAWaitingRecipient(msgID uint32, msg Msg) bool {
+func whetherThereIsAWaitingRecipient(msgID uint32, msg model.Msg) bool {
 	get := msgChanMap.Get(fmt.Sprintf("%d%d", msgID, msg.SessionCode))
 	if get != nil {
 		go func() {
-			get.(chan Msg) <- msg
+			get.(chan model.Msg) <- msg
 		}()
 		return true
 	}
@@ -240,12 +234,12 @@ func whetherThereIsAWaitingRecipient(msgID uint32, msg Msg) bool {
 }
 
 func GetVideoCacheData(videoKey string) []model.Data {
-	msg := sendAMessageAndWaitForAResponse(model.NewCacheData, Msg{
+	msg := sendAMessageAndWaitForAResponse(model.NewCacheData, model.Msg{
 		SessionCode: rand.Uint64(),
-		Err:         nil,
+		Err:         "",
 		Data:        videoKey,
 	}, time.Second*5)
-	if msg.Err != nil {
+	if msg.Err != "" {
 		logs.Err(msg.Err)
 		return make([]model.Data, 0)
 	}

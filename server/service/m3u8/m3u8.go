@@ -9,7 +9,7 @@ import (
 	"p00q.cn/video_cdn/comm/utils"
 	"p00q.cn/video_cdn/server/global"
 	downloadServer "p00q.cn/video_cdn/server/service/download"
-	nodeserver "p00q.cn/video_cdn/server/service/node"
+	nodeServer "p00q.cn/video_cdn/server/service/node"
 	"strings"
 )
 
@@ -189,7 +189,7 @@ func CacheM3u8(m3u8 string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	nodeserver.DelayTest(host)
+	nodeServer.DelayTest(host)
 	thePath, err := ParseM3U8AndCacheTheURL(m3u8)
 	if err != nil {
 		return "", err
@@ -198,9 +198,17 @@ func CacheM3u8(m3u8 string) (string, error) {
 	global.MySQL.Model(&model.Delay{}).Where("host=?", host).Order("val ASC").First(&delay)
 	var node model.Node
 	if delay.Val > 0 {
-		node = nodeserver.GetNodeInfoByIP(delay.NodeIP)
+		node = nodeServer.GetNodeInfoByIP(delay.NodeIP)
 	}
-	cacheUrl := fmt.Sprintf("http://%s:%d%s", node.IP, node.Port, thePath)
+	protocol := "http"
+	if node.Https {
+		protocol = "https"
+	}
+	hostUrl := node.IP
+	if node.Domain != "" {
+		hostUrl = node.Domain
+	}
+	cacheUrl := fmt.Sprintf("%s://%s:%d%s", protocol, hostUrl, node.Port, thePath)
 	urlP, _ := url.Parse(m3u8)
 	videoKey := utils.MD5(urlP.Host + urlP.Path)
 	global.MySQL.Create(&model.Cache{
@@ -212,6 +220,6 @@ func CacheM3u8(m3u8 string) (string, error) {
 		Valid:   true,
 		Flow:    0,
 	})
-	go nodeserver.NewCacheData(videoKey, node.IP)
+	go nodeServer.NewCacheData(videoKey, node.IP)
 	return cacheUrl, nil
 }

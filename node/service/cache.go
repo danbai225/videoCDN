@@ -14,7 +14,7 @@ import (
 
 func CacheFormUrl(url string) ([]byte, error) {
 	now := time.Now()
-	data, err := Download(url)
+	data, err := Download(GetUrl(url))
 	logs.Info("cache", url, fmt.Sprintf("%0.2f", time.Now().Sub(now).Seconds()))
 	if err != nil {
 		return nil, err

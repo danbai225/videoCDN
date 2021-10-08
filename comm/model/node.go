@@ -3,14 +3,15 @@ package model
 import "time"
 
 type Node struct {
-	base
+	Base
 	ID                 uint      `gorm:"comment:'ID'" json:"id"`
 	IP                 string    `gorm:"size:32;comment:'IP';uniqueIndex" json:"ip"`
 	Port               uint16    `gorm:"comment:'服务端口'" json:"port"`
 	Domain             string    `gorm:"size:128;comment:'域名'" json:"domain"`
+	Https              bool      `gorm:"comment:'是否开启https'" json:"https"`
 	Area               string    `gorm:"size:128;comment:'地区'" json:"area"`
 	Bandwidth          uint      `gorm:"comment:'带宽'" json:"bandwidth"`
-	Token              string    `gorm:"size:128;comment:'访问令牌'" json:"token"`
+	Token              string    `gorm:"size:128;comment:'访问令牌';uniqueIndex" json:"token"`
 	UseOfMemory        uint64    `gorm:"comment:'已使用的内存'" json:"use_of_memory"`
 	AvailableMemory    uint64    `gorm:"comment:'可使用的内存'" json:"available_memory"`
 	TotalMemory        uint64    `gorm:"comment:'总运行内存'" json:"total_memory"`
