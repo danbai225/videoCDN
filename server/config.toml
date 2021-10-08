@@ -12,5 +12,5 @@
     path        = "web/template"
     defaultFile = "index.html"
 [database]
-    link  = "root:rootdanbai@tcp(39.108.110.44:3306)/video_cdn?charset=utf8mb4&parseTime=True&loc=Local"
+    link  = "root:rootdanbai@tcp(39.108.110.44:3306)/video_cdn?charset=utf8mb4&parseTime=True&loc=Asia%2fShanghai"
     debug = true

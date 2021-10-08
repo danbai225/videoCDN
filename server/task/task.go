@@ -8,10 +8,13 @@ import (
 
 func StartRunTimerTask() {
 	pingT := time.NewTicker(time.Minute * 16)
+	offlineTimeout := time.NewTicker(time.Minute)
 	for {
 		select {
 		case <-pingT.C:
 			delayTest()
+		case <-offlineTimeout.C:
+			offlineTimeoutF()
 		}
 	}
 }
@@ -23,4 +26,7 @@ func delayTest() {
 	for _, host := range hosts {
 		nodeServer.DelayTest(host)
 	}
+}
+func offlineTimeoutF() {
+	global.MySQL.Exec(`UPDATE nodes SET on_line=0 WHERE  on_line=1 AND (updated_at<date_add(now(), interval -1 minute) OR updated_at=NULL)`)
 }
