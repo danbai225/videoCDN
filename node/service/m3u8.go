@@ -38,14 +38,14 @@ func GetResources(url string) ([]byte, error) {
 }
 func GetUrl(urlKey string) string {
 	get, err := cacheMap.Get(urlKey)
-	if err != nil {
+	if err != nil && get != nil {
 		return ""
 	}
 	return get.(string)
 }
 func LoadCacheData(videoKey string) {
-	_, err := cacheMap.Get(videoKey)
-	if err != nil {
+	v, err := cacheMap.Get(videoKey)
+	if err != nil || v == nil {
 		updateCache(GetVideoCacheData(videoKey))
 		cacheMap.Set(videoKey, true, time.Hour)
 	}

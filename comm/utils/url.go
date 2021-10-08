@@ -3,9 +3,17 @@ package utils
 import (
 	"fmt"
 	"net/url"
+	"path/filepath"
 )
 
 func HostAddPath(url *url.URL, path string) string {
+	base := filepath.Dir(url.Path)
+	if len(path) > 0 && path[0] != '/' {
+		path = "/" + path
+	}
+	if base != "/" {
+		path = base + path
+	}
 	if url.Port() == "" {
 		return fmt.Sprintf("%s://%s%s", url.Scheme, url.Host, path)
 	}

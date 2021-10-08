@@ -1,5 +1,4 @@
 [server]
-	address        = ":8082"
 	serverRoot     = "web/html"
 	serverAgent    = "videoCDN"
 	logPath        = "./logs/server"

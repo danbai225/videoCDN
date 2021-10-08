@@ -22,6 +22,7 @@ func main() {
 	server.EnableHTTPS("./https/server.crt", "./https/server.key")
 	server.SetHTTPSPort(443)
 	server.SetPort(80)
+	server.SetPort(8082)
 	server.Run()
 }
 func test() {

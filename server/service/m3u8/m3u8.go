@@ -195,10 +195,15 @@ func CacheM3u8(m3u8 string) (string, error) {
 		return "", err
 	}
 	delay := model.Delay{}
-	global.MySQL.Model(&model.Delay{}).Where("host=?", host).Order("val ASC").First(&delay)
+	err = global.MySQL.Model(&model.Delay{}).Where("host=?", host).Order("val ASC").First(&delay).Error
 	var node model.Node
-	if delay.Val > 0 {
+	if delay.Val > 0 && err != nil {
 		node = nodeServer.GetNodeInfoByIP(delay.NodeIP)
+	} else {
+		node = nodeServer.AssignANodeWithTheLeastLoad()
+		if node.ID == 0 {
+			return "", errors.New("没有在线的节点")
+		}
 	}
 	protocol := "http"
 	if node.Https {
