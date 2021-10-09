@@ -3,6 +3,7 @@ package node
 import (
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	zutils "github.com/aceld/zinx/utils"
 	"github.com/aceld/zinx/ziface"
@@ -187,6 +188,9 @@ func getNodeConnByIP(ip string) (ziface.IConnection, error) {
 	id, err := global.Cache.Get(fmt.Sprintf("ConnID-%s", ip))
 	if err != nil {
 		return nil, err
+	}
+	if id == nil {
+		return nil, errors.New("null cache")
 	}
 	get, err := server.GetConnMgr().Get(id.(uint32))
 	if err != nil {

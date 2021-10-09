@@ -11,6 +11,7 @@ import (
 	downloadServer "p00q.cn/video_cdn/server/service/download"
 	nodeServer "p00q.cn/video_cdn/server/service/node"
 	"strings"
+	"time"
 )
 
 //解析最终host 可能会携带端口
@@ -241,6 +242,11 @@ func CacheM3u8(m3u8 string) (string, error) {
 		VideoKey: videoKey,
 	})
 	//	global.Logs.Info(4, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
-	go nodeServer.NewCacheData(videoKey, node.IP)
+	key := fmt.Sprintf("cacheData-%s-%s", videoKey, node.IP)
+	contains, _ := global.Cache.Contains(key)
+	if !contains {
+		global.Cache.Set(key, true, time.Hour)
+		go nodeServer.NewCacheData(videoKey, node.IP)
+	}
 	return cacheUrl, nil
 }
