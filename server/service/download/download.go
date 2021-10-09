@@ -2,6 +2,7 @@ package download
 
 import (
 	"github.com/levigross/grequests"
+	"p00q.cn/video_cdn/server/global"
 	"time"
 )
 
@@ -14,8 +15,6 @@ var (
 			"Accept":          "*/*",
 			"Accept-Encoding": "*",
 			"Accept-Language": "zh-Hans;q=1",
-			"Host":            "www.breakvip.com",
-			"Referer":         "https://www.breakvip.com/",
 		},
 	}
 )
@@ -28,6 +27,7 @@ func Download(url string) ([]byte, error) {
 	return response.Bytes(), err
 }
 func Get(url string) (*grequests.Response, error) {
+	global.Logs.Info(url)
 	response, err := grequests.Get(url, requestOptions)
 	if err != nil {
 		return nil, err

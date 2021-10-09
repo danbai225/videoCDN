@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"strings"
 )
 
 func HostAddPath(url *url.URL, path string) string {
@@ -11,7 +12,7 @@ func HostAddPath(url *url.URL, path string) string {
 	if len(path) > 0 && path[0] != '/' {
 		path = "/" + path
 	}
-	if base != "/" {
+	if base != "/" && !strings.HasPrefix(path, base) {
 		path = base + path
 	}
 	if url.Port() == "" {

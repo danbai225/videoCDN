@@ -86,11 +86,17 @@ func getM3U8UrlContent(m3u8Url string) (*url.URL, interface{}, m3u8s.ListType, e
 
 // ParseM3U8AndCacheTheURL 对m3u8播放列表进行url进行替换
 func ParseM3U8AndCacheTheURL(m3u8 string) (string, error) {
+	var err error
 	urlP, list, listType, err := getM3U8UrlContent(m3u8)
 	if err != nil {
 		return "", err
 	}
 	videoKey := utils.MD5(urlP.Host + urlP.Path)
+	defer func() {
+		if err != nil {
+			global.MySQL.Where("video_key=?", videoKey).Delete(&model.Data{})
+		}
+	}()
 	if listType == m3u8s.MASTER {
 		playlist := list.(*m3u8s.MasterPlaylist)
 		variants := playlist.Variants
