@@ -93,16 +93,11 @@ func ParseM3U8AndCacheTheURL(m3u8 string) (string, error) {
 		return "", err
 	}
 	videoKey := utils.MD5(urlP.Host + urlP.Path)
-	defer func() {
-		if err != nil {
-			global.MySQL.Where("video_key=?", videoKey).Delete(&model.Data{})
-		}
-	}()
 	if listType == m3u8s.MASTER {
 		playlist := list.(*m3u8s.MasterPlaylist)
 		variants := playlist.Variants
 		if len(variants) == 0 {
-			return "", errors.New("未获取到播放列表")
+			return videoKey, errors.New("未获取到播放列表")
 		}
 		for i, variant := range variants {
 			if !strings.Contains(variant.URI, "://") {
@@ -110,7 +105,7 @@ func ParseM3U8AndCacheTheURL(m3u8 string) (string, error) {
 			}
 			_, err2 := parseMediaM3U8AndCacheTheURL(videoKey, variant.URI, i)
 			if err2 != nil {
-				return "", err2
+				return videoKey, err2
 			}
 			variant.URI = fmt.Sprintf("/video/%s/list%d.m3u8", videoKey, i)
 		}
@@ -128,21 +123,21 @@ func ParseM3U8AndCacheTheURL(m3u8 string) (string, error) {
 func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (string, error) {
 	urlP, list, listType, err := getM3U8UrlContent(m3u8)
 	if err != nil {
-		return "", err
+		return videoKey, err
 	}
 	if listType != m3u8s.MEDIA {
-		return "", errors.New("类型错误 listType!=m3u8s.MEDIA")
+		return videoKey, errors.New("类型错误 listType!=m3u8s.MEDIA")
 	}
 	mediaList := list.(*m3u8s.MediaPlaylist)
 	segments := mediaList.Segments
 	if len(segments) == 0 {
-		return "", errors.New("未获取到播放列表资源")
+		return videoKey, errors.New("未获取到播放列表资源")
 	}
 	ds := make([]model.Data, 0)
 	//存在加密
-	keyUrl := mediaList.Key.URI
+	bkKeyUrl := ""
 	if mediaList.Key != nil && mediaList.Key.URI != "" {
-
+		keyUrl := mediaList.Key.URI
 		if !strings.Contains(keyUrl, "://") {
 			keyUrl = utils.HostAddPath(urlP, keyUrl)
 		}
@@ -150,6 +145,7 @@ func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (stri
 		if err2 != nil {
 			return "", err2
 		}
+		bkKeyUrl = mediaList.Key.URI
 		mediaList.Key.URI = fmt.Sprintf("/video/%s/list%d.key", videoKey, index)
 		ds = append(ds, model.Data{
 			Key:      mediaList.Key.URI,
@@ -178,7 +174,9 @@ func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (stri
 	mediaList.ResetCache()
 	cacheUrl := fmt.Sprintf("/video/%s/list%d.m3u8", videoKey, index)
 	s := mediaList.Encode().String()
-	s = strings.ReplaceAll(s, keyUrl, mediaList.Key.URI)
+	if bkKeyUrl != "" {
+		s = strings.ReplaceAll(s, bkKeyUrl, mediaList.Key.URI)
+	}
 	ds = append(ds, model.Data{
 		Key:      cacheUrl,
 		VideoKey: videoKey,
@@ -205,6 +203,7 @@ func CacheM3u8(m3u8 string) (string, error) {
 	//global.Logs.Info(1, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	thePath, err := ParseM3U8AndCacheTheURL(m3u8)
 	if err != nil {
+		global.MySQL.Where("video_key=?", thePath).Delete(&model.Data{})
 		return "", err
 	}
 	//global.Logs.Info(2, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))

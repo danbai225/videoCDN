@@ -10,6 +10,7 @@ import (
 	"p00q.cn/video_cdn/comm/utils"
 	"p00q.cn/video_cdn/node/config"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,9 @@ func CacheFormUrl(url string) ([]byte, error) {
 	return data, nil
 }
 func Cache(key string, data []byte) error {
+	if len(data) < 1024*20 && strings.HasSuffix(key, "ts") {
+		return errors.New("size <20k")
+	}
 	md5 := utils.MD5(key)
 	cachePath := getPath(md5)
 	err := utils.IsDirExistCreateIt(filepath.Dir(cachePath))
