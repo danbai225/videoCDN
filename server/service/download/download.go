@@ -2,14 +2,13 @@ package download
 
 import (
 	"github.com/levigross/grequests"
-	"p00q.cn/video_cdn/server/global"
 	"time"
 )
 
 var (
 	requestOptions = &grequests.RequestOptions{
 		UserAgent:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36",
-		RequestTimeout: time.Second * 5,
+		RequestTimeout: time.Second * 10,
 		Headers: map[string]string{
 			"Connection":      "keep-alive",
 			"Accept":          "*/*",
@@ -27,7 +26,6 @@ func Download(url string) ([]byte, error) {
 	return response.Bytes(), err
 }
 func Get(url string) (*grequests.Response, error) {
-	global.Logs.Info(url)
 	response, err := grequests.Get(url, requestOptions)
 	if err != nil {
 		return nil, err

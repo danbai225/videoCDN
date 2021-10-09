@@ -11,6 +11,7 @@ import (
 	downloadServer "p00q.cn/video_cdn/server/service/download"
 	nodeServer "p00q.cn/video_cdn/server/service/node"
 	"strings"
+	"time"
 )
 
 //解析最终host 可能会携带端口
@@ -186,6 +187,7 @@ func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (stri
 
 // CacheM3u8 获取缓存m3u8地址
 func CacheM3u8(m3u8 string) (string, error) {
+	now := time.Now()
 	cache := model.Cache{}
 	global.MySQL.Model(&model.Cache{}).Where("url=?", m3u8).Take(&cache)
 	if cache.ID != 0 {
@@ -195,11 +197,14 @@ func CacheM3u8(m3u8 string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	global.Logs.Info(0, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	nodeServer.DelayTest(host)
+	global.Logs.Info(1, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	thePath, err := ParseM3U8AndCacheTheURL(m3u8)
 	if err != nil {
 		return "", err
 	}
+	global.Logs.Info(2, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	delay := model.Delay{}
 	err = global.MySQL.Model(&model.Delay{}).Where("host=?", host).Order("val ASC").First(&delay).Error
 	var node model.Node
@@ -219,6 +224,7 @@ func CacheM3u8(m3u8 string) (string, error) {
 	if node.Domain != "" {
 		hostUrl = node.Domain
 	}
+	global.Logs.Info(3, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	cacheUrl := fmt.Sprintf("%s://%s:%d%s", protocol, hostUrl, node.Port, thePath)
 	urlP, _ := url.Parse(m3u8)
 	videoKey := utils.MD5(urlP.Host + urlP.Path)
@@ -231,6 +237,7 @@ func CacheM3u8(m3u8 string) (string, error) {
 		Valid:   true,
 		Flow:    0,
 	})
+	global.Logs.Info(4, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	go nodeServer.NewCacheData(videoKey, node.IP)
 	return cacheUrl, nil
 }

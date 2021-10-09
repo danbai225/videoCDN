@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	logs "github.com/danbai225/go-logs"
+	"github.com/shirou/gopsutil/v3/disk"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"p00q.cn/video_cdn/comm/utils"
@@ -65,4 +67,44 @@ func getPath(md5 string) string {
 		return ""
 	}
 	return filepath.Join(config.GlobalConfig.CacheDir, md5[:3], md5)
+}
+
+var clearFlg bool
+
+//清理磁盘缓存
+func clear() {
+	if clearFlg {
+		return
+	} else {
+		clearFlg = true
+		defer func() {
+			clearFlg = false
+			logs.Info("清理完成")
+		}()
+	}
+	logs.Info("开始清理")
+	diffTime := int64(3600 * 24 * 7)
+	UsedPercent := 81
+	now := time.Now().Unix()
+	for UsedPercent > 80 {
+		_ = filepath.WalkDir(config.GlobalConfig.CacheDir, func(path string, d fs.DirEntry, err error) error {
+			if !d.IsDir() {
+				info, err := d.Info()
+				if err == nil {
+					fileTime := info.ModTime().Unix()
+					if (now - fileTime) > diffTime {
+						os.Remove(path)
+					}
+				}
+			}
+			return nil
+		})
+		usage, err := disk.Usage(config.GlobalConfig.CacheDir)
+		if err == nil {
+			UsedPercent = int(usage.UsedPercent)
+		} else {
+			return
+		}
+		diffTime = diffTime / 2
+	}
 }

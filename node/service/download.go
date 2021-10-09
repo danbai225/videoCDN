@@ -8,7 +8,7 @@ import (
 var (
 	requestOptions = &grequests.RequestOptions{
 		UserAgent:      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36",
-		RequestTimeout: time.Second * 5,
+		RequestTimeout: time.Second * 10,
 		Headers: map[string]string{
 			"Connection":      "keep-alive",
 			"Accept":          "*/*",

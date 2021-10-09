@@ -120,11 +120,14 @@ func PingData() []byte {
 	if err == nil {
 		data.CPUPercent, _ = decimal.NewFromFloat(percent[0]).Round(2).Float64()
 	}
-	usage, err := disk.Usage("./")
+	usage, err := disk.Usage(config.GlobalConfig.CacheDir)
 	if err == nil {
 		data.TotalDiskSpace = usage.Total
 		data.AvailableDiskSpace = usage.Free
 		data.DiskSpaceUsed = usage.Used
+		if usage.UsedPercent > 80 {
+			clear()
+		}
 	}
 	data.Port = uint16(config.GlobalConfig.Port)
 	data.Time = time.Now()

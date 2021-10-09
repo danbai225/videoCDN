@@ -15,7 +15,7 @@ func HostAddPath(url *url.URL, path string) string {
 	if base != "/" && !strings.HasPrefix(path, base) {
 		path = base + path
 	}
-	if url.Port() == "" {
+	if strings.Contains(url.Host, ":") {
 		return fmt.Sprintf("%s://%s%s", url.Scheme, url.Host, path)
 	}
 	return fmt.Sprintf("%s://%s:%s%s", url.Scheme, url.Host, url.Port(), path)
