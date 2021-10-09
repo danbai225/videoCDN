@@ -89,6 +89,12 @@ func (s *serverConn) readMsg() (*znet.Message, error) {
 	}
 	return nil, errors.New("GetDataLen() < 0")
 }
+func (s *serverConn) Close() error {
+	if s.conn != nil {
+		return s.conn.Close()
+	}
+	return nil
+}
 
 //发送消息
 func (s *serverConn) sendMsg(id uint32, data []byte) error {
@@ -120,7 +126,7 @@ func PingData() []byte {
 		}
 	}
 	percent, err := cpu.Percent(0, false)
-	if err == nil {
+	if err == nil && len(percent) > 0 {
 		data.CPUPercent, _ = decimal.NewFromFloat(percent[0]).Round(2).Float64()
 	}
 	usage, err := disk.Usage(config.GlobalConfig.CacheDir)
@@ -152,6 +158,7 @@ func Run() {
 	err := server.connect()
 	if err != nil {
 		logs.Info("连接服务端失败", err)
+		_ = server.Close()
 		return
 	}
 	logs.Info("连接成功...")
@@ -164,6 +171,7 @@ func Run() {
 		}
 		go messageHandling(msg)
 	}
+	_ = server.Close()
 }
 
 func msg2byte(m model.Msg) []byte {

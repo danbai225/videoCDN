@@ -3,13 +3,8 @@ package utils
 import (
 	"github.com/go-ping/ping"
 	"log"
-	"os/exec"
 )
 
-//sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"
-func init() {
-	exec.Command("sysctl", "-w", "net.ipv4.ping_group_range=\"0 2147483647\"").Start()
-}
 func Ping(addr string) int64 {
 	pinger, err := ping.NewPinger(addr)
 	if err != nil {

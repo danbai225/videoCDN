@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	logs "github.com/danbai225/go-logs"
 	"github.com/shirou/gopsutil/v3/disk"
 	"io/fs"
@@ -15,9 +14,7 @@ import (
 )
 
 func CacheFormUrl(url string) ([]byte, error) {
-	now := time.Now()
 	data, err := Download(GetUrl(url))
-	logs.Info("cache", url, fmt.Sprintf("%0.2f", time.Now().Sub(now).Seconds()))
 	if err != nil {
 		return nil, err
 	}
@@ -73,20 +70,26 @@ var clearFlg bool
 
 //清理磁盘缓存
 func clear() {
+	var usage *disk.UsageStat
+	var err error
 	if clearFlg {
 		return
 	} else {
 		clearFlg = true
 		defer func() {
 			clearFlg = false
-			logs.Info("清理完成")
+			logs.Info("清理完成", usage.UsedPercent, usage.Used/1024/1024, "MB")
 		}()
 	}
-	logs.Info("开始清理")
+	usage, err = disk.Usage(config.GlobalConfig.CacheDir)
+	if err != nil {
+		logs.Err(err)
+		return
+	}
+	logs.Info("开始清理", usage.UsedPercent, usage.Used/1024/1024, "MB")
 	diffTime := int64(3600 * 24 * 7)
-	UsedPercent := 81
 	now := time.Now().Unix()
-	for UsedPercent > 80 {
+	for usage.UsedPercent > 80 {
 		_ = filepath.WalkDir(config.GlobalConfig.CacheDir, func(path string, d fs.DirEntry, err error) error {
 			if !d.IsDir() {
 				info, err := d.Info()
@@ -99,10 +102,9 @@ func clear() {
 			}
 			return nil
 		})
-		usage, err := disk.Usage(config.GlobalConfig.CacheDir)
-		if err == nil {
-			UsedPercent = int(usage.UsedPercent)
-		} else {
+		usage, err = disk.Usage(config.GlobalConfig.CacheDir)
+		if err != nil {
+			logs.Err(err)
 			return
 		}
 		diffTime = diffTime / 2

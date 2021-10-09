@@ -1,7 +1,6 @@
 package service
 
 import (
-	logs "github.com/danbai225/go-logs"
 	"github.com/gogf/gf/os/gcache"
 	"p00q.cn/video_cdn/comm/model"
 	"strings"
@@ -19,14 +18,12 @@ func GetResources(url string) ([]byte, error) {
 	key := split[2]
 	LoadCacheData(key)
 	if HasKey(url) {
-		logs.Info("走缓存", url)
 		d, err := GetCache(url)
 		if err != nil {
 			return nil, err
 		}
 		return d, nil
 	} else {
-		logs.Info("不走缓存", url)
 		formUrl, err := CacheFormUrl(url)
 		if err != nil {
 			if strings.Contains(err.Error(), "Client.Timeout") {

@@ -91,3 +91,6 @@
 2021-10-09 15:53:42.050 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载结束。成功：39，失败：1774
 2021-10-09 15:53:43.600 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 40 / 1813
 2021-10-09 15:53:48.515 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 41 / 1813
+2021-10-09 16:08:38.212 [JavaFX Application Thread] INFO  com.starxg.m3u8.M3U8Application : 程序关闭中...
+2021-10-09 16:08:38.212 [JavaFX Application Thread] INFO  c.s.m3u8.config.ApplicationConfig : 持久化配置到 [/Volumes/data/Code/videoCDN/tool/m3u8-download-1.0.3/conf/m3u8-download.conf]
+2021-10-09 16:08:38.361 [JavaFX Application Thread] INFO  com.starxg.m3u8.M3U8Application : 程序关闭

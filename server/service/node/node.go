@@ -79,6 +79,8 @@ func (r *pongRouter) Handle(request ziface.IRequest) {
 	err := global.MySQL.Where("ip=?", ip).Updates(&node).Error
 	if err != nil {
 		global.Logs.Error(err)
+		request.GetConnection().Stop()
+		return
 	}
 	err = request.GetConnection().SendBuffMsg(model.PingPong, msg2byte(model.Msg{
 		SessionCode: 0,
@@ -87,6 +89,8 @@ func (r *pongRouter) Handle(request ziface.IRequest) {
 	}))
 	if err != nil {
 		global.Logs.Error(err)
+		request.GetConnection().Stop()
+		return
 	}
 	setNodeRate(ip, node.Send, node.Receive)
 }

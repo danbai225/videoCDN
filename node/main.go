@@ -46,5 +46,7 @@ func main() {
 	if config.GlobalConfig.CertFile != "" {
 		server.EnableHTTPS(config.GlobalConfig.CertFile, config.GlobalConfig.KeyFile)
 	}
+	server.SetReadTimeout(time.Second * 30)
+	server.SetWriteTimeout(time.Second * 30)
 	server.Run()
 }
