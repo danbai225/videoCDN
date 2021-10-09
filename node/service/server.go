@@ -115,6 +115,9 @@ func PingData() []byte {
 		data.TotalMemory = v.Total
 		data.UseOfMemory = v.Used
 		data.AvailableMemory = v.Free
+		if v.UsedPercent > 85 {
+			clearCacheMap()
+		}
 	}
 	percent, err := cpu.Percent(0, false)
 	if err == nil {

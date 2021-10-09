@@ -60,3 +60,6 @@ func updateCache(data []model.Data) {
 		}
 	}
 }
+func clearCacheMap() {
+	_ = cacheMap.Clear()
+}

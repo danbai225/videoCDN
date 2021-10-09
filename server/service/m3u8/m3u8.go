@@ -140,8 +140,9 @@ func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (stri
 	}
 	ds := make([]model.Data, 0)
 	//存在加密
+	keyUrl := mediaList.Key.URI
 	if mediaList.Key != nil && mediaList.Key.URI != "" {
-		keyUrl := mediaList.Key.URI
+
 		if !strings.Contains(keyUrl, "://") {
 			keyUrl = utils.HostAddPath(urlP, keyUrl)
 		}
@@ -176,11 +177,13 @@ func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (stri
 	}
 	mediaList.ResetCache()
 	cacheUrl := fmt.Sprintf("/video/%s/list%d.m3u8", videoKey, index)
+	s := mediaList.Encode().String()
+	s = strings.ReplaceAll(s, keyUrl, mediaList.Key.URI)
 	ds = append(ds, model.Data{
 		Key:      cacheUrl,
 		VideoKey: videoKey,
 		Type:     "data",
-		Data:     mediaList.Encode().String(),
+		Data:     s,
 	})
 	return cacheUrl, global.MySQL.Create(&ds).Error
 }
@@ -229,13 +232,14 @@ func CacheM3u8(m3u8 string) (string, error) {
 	urlP, _ := url.Parse(m3u8)
 	videoKey := utils.MD5(urlP.Host + urlP.Path)
 	global.MySQL.Create(&model.Cache{
-		NodeIP:  node.IP,
-		Host:    host,
-		NodeUrl: cacheUrl,
-		Url:     m3u8,
-		Visits:  0,
-		Valid:   true,
-		Flow:    0,
+		NodeIP:   node.IP,
+		Host:     host,
+		NodeUrl:  cacheUrl,
+		Url:      m3u8,
+		Visits:   0,
+		Valid:    true,
+		Flow:     0,
+		VideoKey: videoKey,
 	})
 	global.Logs.Info(4, fmt.Sprintf("%.2f", time.Now().Sub(now).Seconds()))
 	go nodeServer.NewCacheData(videoKey, node.IP)

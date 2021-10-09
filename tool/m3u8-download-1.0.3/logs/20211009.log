@@ -1,0 +1,93 @@
+2021-10-09 15:52:36.749 [JavaFX Application Thread] INFO  com.starxg.m3u8.M3U8Application : 程序启动
+2021-10-09 15:52:36.758 [JavaFX Application Thread] INFO  c.s.m3u8.config.ApplicationConfig : 读取 [application.properties] 成功。value:{version=1.0.3}
+2021-10-09 15:52:36.762 [JavaFX Application Thread] INFO  c.s.m3u8.config.ApplicationConfig : 读取配置 [/Volumes/data/Code/videoCDN/tool/m3u8-download-1.0.3/conf/m3u8-download.conf]
+2021-10-09 15:52:36.770 [JavaFX Application Thread] WARN  c.s.m3u8.config.ApplicationConfig : 获取配置文件失败，采用默认配置。原因：conf/m3u8-download.conf (No such file or directory)
+2021-10-09 15:52:53.606 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 开始解析地址：https://n0.gpgo.site:8083/video/75bfe8e89bd26b1501ca69574b8ba953/index.m3u8
+2021-10-09 15:52:53.606 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 解析地址...
+2021-10-09 15:52:56.350 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 开始解析地址：https://n0.gpgo.site:8083/video/75bfe8e89bd26b1501ca69574b8ba953/list0.m3u8
+2021-10-09 15:52:57.132 [bytebuff-pool-2] INFO  com.starxg.m3u8.parser.M3U8Parser : 读取到行首。
+2021-10-09 15:52:58.161 [bytebuff-pool-2] INFO  com.starxg.m3u8.parser.M3U8Parser : 读取到结束节点。
+2021-10-09 15:52:58.166 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 解析地址成功。共 1813 条
+2021-10-09 15:53:11.710 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 0 / 1813
+2021-10-09 15:53:12.002 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 1 / 1813
+2021-10-09 15:53:13.223 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 2 / 1813
+2021-10-09 15:53:13.907 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 3 / 1813
+2021-10-09 15:53:14.104 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 4 / 1813
+2021-10-09 15:53:14.504 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 5 / 1813
+2021-10-09 15:53:15.305 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 6 / 1813
+2021-10-09 15:53:16.990 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 7 / 1813
+2021-10-09 15:53:17.597 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 8 / 1813
+2021-10-09 15:53:18.386 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 9 / 1813
+2021-10-09 15:53:18.868 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 10 / 1813
+2021-10-09 15:53:19.171 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 11 / 1813
+2021-10-09 15:53:19.969 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 12 / 1813
+2021-10-09 15:53:20.185 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 13 / 1813
+2021-10-09 15:53:20.584 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 14 / 1813
+2021-10-09 15:53:22.376 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 15 / 1813
+2021-10-09 15:53:23.425 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 16 / 1813
+2021-10-09 15:53:25.831 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 17 / 1813
+2021-10-09 15:53:26.257 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 18 / 1813
+2021-10-09 15:53:26.583 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 19 / 1813
+2021-10-09 15:53:27.003 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 20 / 1813
+2021-10-09 15:53:27.729 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 21 / 1813
+2021-10-09 15:53:27.746 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 22 / 1813
+2021-10-09 15:53:27.993 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 23 / 1813
+2021-10-09 15:53:29.614 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 24 / 1813
+2021-10-09 15:53:29.871 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 25 / 1813
+2021-10-09 15:53:30.230 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 26 / 1813
+2021-10-09 15:53:30.493 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 27 / 1813
+2021-10-09 15:53:32.725 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 28 / 1813
+2021-10-09 15:53:32.978 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 29 / 1813
+2021-10-09 15:53:33.031 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 30 / 1813
+2021-10-09 15:53:33.157 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 31 / 1813
+2021-10-09 15:53:33.199 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 32 / 1813
+2021-10-09 15:53:35.161 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 33 / 1813
+2021-10-09 15:53:36.695 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 34 / 1813
+2021-10-09 15:53:36.748 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 35 / 1813
+2021-10-09 15:53:38.254 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 36 / 1813
+2021-10-09 15:53:38.624 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 37 / 1813
+2021-10-09 15:53:40.567 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 38 / 1813
+2021-10-09 15:53:40.783 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 39 / 1813
+2021-10-09 15:53:41.685 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [36.ts] 下载暂停
+2021-10-09 15:53:41.687 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [39.ts] 下载暂停
+2021-10-09 15:53:41.689 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [40.ts] 下载暂停
+2021-10-09 15:53:41.962 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [42.ts] 下载暂停
+2021-10-09 15:53:41.963 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [43.ts] 下载暂停
+2021-10-09 15:53:41.964 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [44.ts] 下载暂停
+2021-10-09 15:53:41.964 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [45.ts] 下载暂停
+2021-10-09 15:53:41.968 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [46.ts] 下载暂停
+2021-10-09 15:53:41.970 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [47.ts] 下载暂停
+2021-10-09 15:53:41.972 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [48.ts] 下载暂停
+2021-10-09 15:53:41.974 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [49.ts] 下载暂停
+2021-10-09 15:53:41.976 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [50.ts] 下载暂停
+2021-10-09 15:53:41.978 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [51.ts] 下载暂停
+2021-10-09 15:53:41.979 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [52.ts] 下载暂停
+2021-10-09 15:53:41.982 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [53.ts] 下载暂停
+2021-10-09 15:53:41.983 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [54.ts] 下载暂停
+2021-10-09 15:53:41.986 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [55.ts] 下载暂停
+2021-10-09 15:53:41.987 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [56.ts] 下载暂停
+2021-10-09 15:53:41.988 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [57.ts] 下载暂停
+2021-10-09 15:53:41.991 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [58.ts] 下载暂停
+2021-10-09 15:53:41.992 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [59.ts] 下载暂停
+2021-10-09 15:53:41.995 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [60.ts] 下载暂停
+2021-10-09 15:53:41.998 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [61.ts] 下载暂停
+2021-10-09 15:53:41.999 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [62.ts] 下载暂停
+2021-10-09 15:53:42.003 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [63.ts] 下载暂停
+2021-10-09 15:53:42.006 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [64.ts] 下载暂停
+2021-10-09 15:53:42.009 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [65.ts] 下载暂停
+2021-10-09 15:53:42.014 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [66.ts] 下载暂停
+2021-10-09 15:53:42.016 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [67.ts] 下载暂停
+2021-10-09 15:53:42.018 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [68.ts] 下载暂停
+2021-10-09 15:53:42.021 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [69.ts] 下载暂停
+2021-10-09 15:53:42.026 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [70.ts] 下载暂停
+2021-10-09 15:53:42.027 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [71.ts] 下载暂停
+2021-10-09 15:53:42.029 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [72.ts] 下载暂停
+2021-10-09 15:53:42.032 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [73.ts] 下载暂停
+2021-10-09 15:53:42.033 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [74.ts] 下载暂停
+2021-10-09 15:53:42.038 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [75.ts] 下载暂停
+2021-10-09 15:53:42.040 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : [76.ts] 下载暂停
+2021-10-09 15:53:42.041 [JavaFX Application Thread] INFO  c.starxg.m3u8.download.M3U8Download : 暂停线程 true
+2021-10-09 15:53:42.046 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载暂停，点击 “下载” 可继续。
+2021-10-09 15:53:42.050 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载结束。成功：39，失败：1774
+2021-10-09 15:53:43.600 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 40 / 1813
+2021-10-09 15:53:48.515 [JavaFX Application Thread] INFO  c.s.m3u8.controller.MainController : 下载中 41 / 1813
