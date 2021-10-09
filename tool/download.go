@@ -19,6 +19,7 @@ var (
 )
 
 func Download(url string) ([]byte, error) {
+	//./m3u8D -u http://107.189.14.25:8080/video/test/index.m3u8 -ht="apiv2"
 	response, err := Get(url)
 	if err != nil {
 		return nil, err

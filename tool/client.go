@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -241,23 +242,24 @@ func Start(list List, num int, d bool) {
 	}
 }
 func download(url string) {
-	logs.Info("开始下载", url)
-	//./m3u8D -u=https://m8t.vboku.com/20211007/T2QV9wNJ/hls/index.m3u8 -ht=apiv2
-	theURL, err := ParseM3U8AndCacheTheURL(url)
-	if err != nil {
-		logs.Err(err, url)
-	} else {
-		size := 0
-		l := len(theURL)
-		for i := range theURL {
-			bytes, err2 := Download(theURL[l-i-1])
-			if err2 != nil {
-				logs.Err(err2)
-			}
-			size += len(bytes)
-		}
-		logs.Info("下载完成", fmt.Sprintf("%dMB", size/1024/1024))
-	}
+	exec.Command("sh", "-c", "./m3u8D -u "+url+" -ht=\"apiv2\"").Run()
+	//logs.Info("开始下载", url)
+	////./m3u8D -u=https://m8t.vboku.com/20211007/T2QV9wNJ/hls/index.m3u8 -ht=apiv2
+	//theURL, err := ParseM3U8AndCacheTheURL(url)
+	//if err != nil {
+	//	logs.Err(err, url)
+	//} else {
+	//	size := 0
+	//	l := len(theURL)
+	//	for i := range theURL {
+	//		bytes, err2 := Download(theURL[l-i-1])
+	//		if err2 != nil {
+	//			logs.Err(err2)
+	//		}
+	//		size += len(bytes)
+	//	}
+	//	logs.Info("下载完成", fmt.Sprintf("%dMB", size/1024/1024))
+	//}
 }
 
 //解析m3u8文件链接

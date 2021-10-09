@@ -1,5 +1,5 @@
 package main
 
 func main() {
-	clients(5, true, true)
+	clients(1, true, true)
 }
