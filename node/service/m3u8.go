@@ -35,7 +35,7 @@ func GetResources(url string) ([]byte, error) {
 }
 func GetUrl(urlKey string) string {
 	get, err := cacheMap.Get(urlKey)
-	if err != nil && get != nil {
+	if err != nil || get != nil {
 		return ""
 	}
 	return get.(string)
