@@ -1,3 +1,6 @@
 /.idea/
 /node/logs/
 /tool/logs/
+server
+node
+tool
