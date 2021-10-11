@@ -6,6 +6,7 @@ import (
 
 func RegRoute(server *ghttp.Server) {
 	server.BindHandler("/get_new", GetNewUrl)
+	server.BindHandler("/", Index)
 	node := server.Group("/node")
 	node.POST("/ping", ping)
 }

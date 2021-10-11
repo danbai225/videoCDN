@@ -178,14 +178,12 @@ func clients(num int, d bool, randPage bool) {
 		return
 	}
 	countPage = list.Pagecount
-	println(countPage)
 	if randPage {
 		i := rand.Int63n(int64(countPage)) + 1
 		l, err := getList(int(i))
 		if err == nil {
 			Start(l, num, d)
 		}
-
 	}
 
 }
@@ -213,7 +211,7 @@ func Start(list List, num int, d bool) {
 							Jar:       cookieJar,
 							Transport: tr,
 						}
-						get, err := c.Get("https://gpgo.site//get_new?url=" + i3[0])
+						get, err := c.Get("https://gpgo.site/get_new?url=" + i3[0])
 						if err != nil {
 							logs.Info(err)
 							return nil

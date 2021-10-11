@@ -1,6 +1,70 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VideoCDN</title>
+    <link rel="icon" href="/img/logo.png">
+    <!-- ZUI 标准版压缩后的 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/zui/1.9.2/css/zui.min.css">
+    <!-- DP 标准版压缩后的 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.css">
+</head>
 <body>
-test
+<div class="container-fixed-md">
+    id:{{.id}}, name:{{.name}}
+    <div class="input-group">
+        <input id="video-input" type="text" class="form-control">
+        <span class="input-group-btn">
+    <button class="btn btn-default" id="video-bt" type="button">加速播放</button>
+  </span>
+    </div>
+    <div id="dplayer"></div>
+</div>
 </body>
+<!-- ZUI Javascript 依赖 jQuery -->
+<script src="https://cdn.bootcss.com/zui/1.9.2/lib/jquery/jquery.js"></script>
+<!-- ZUI 标准版压缩后的 JavaScript 文件 -->
+<script src="https://cdn.bootcss.com/zui/1.9.2/js/zui.min.js"></script>
+<!-- HLS 标准版压缩后的 JavaScript 文件 -->
+<script src="https://cdn.staticfile.org/hls.js/1.0.11/hls.min.js"></script>
+<!-- DP 标准版压缩后的 JavaScript 文件 -->
+<script src="https://cdn.staticfile.org/dplayer/1.26.0/DPlayer.min.js"></script>
+<script>
+    const dp = new DPlayer({
+        container: document.getElementById('dplayer'),
+        theme: '#eee',
+        lang: 'zh-cn',
+        screenshot: true,
+        preload: 'auto',
+        volume: 0.1,
+        mutex: true,
+        video: {
+            url: '',
+            type: 'hls',
+        }
+    });
+
+    $(function(){
+
+    });
+    $("#video-bt").click(function (){
+        new $.zui.Messager('播放地址转换中', {
+            icon: 'bell' // 定义消息图标
+        }).show();
+        $.get("https://gpgo.site//get_new?url="+$("#video-input").val(), function( data ) {
+            if (data.err===""){
+                dp.switchVideo( {
+                    url: data.url,
+                    type: 'hls',
+                })
+                dp.play()
+            }else {
+                console.log(data.err)
+            }
+        });
+
+    })
+</script>
 </html>
