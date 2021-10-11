@@ -1,6 +1,7 @@
 package service
 
 import (
+	logs "github.com/danbai225/go-logs"
 	"github.com/levigross/grequests"
 	"time"
 )
@@ -28,6 +29,7 @@ func Download(url string) ([]byte, error) {
 	return response.Bytes(), err
 }
 func Get(url string) (*grequests.Response, error) {
+	logs.Info(url)
 	response, err := grequests.Get(url, requestOptions)
 	if err != nil {
 		return nil, err

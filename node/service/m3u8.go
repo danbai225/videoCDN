@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	logs "github.com/danbai225/go-logs"
 	"github.com/gogf/gf/container/gset"
 	"github.com/gogf/gf/os/gcache"
 	"net/url"
@@ -146,6 +147,7 @@ func updateCache(data []model.Data) {
 					}
 				}
 			}
+			///#https://video.dious.cc/20200617/aAUCQ5Hf/index.m3u8
 			//去主机段组成公共部分
 			if head == "host" || head == "" || !strings.Contains(datum.Data, head) {
 				hostHead := getHostHead(datum.Data)
@@ -178,6 +180,7 @@ func GetCacheMapData(key string) string {
 		v, has := vc.url[getShortKey(key)]
 		if has {
 			cacheMap.UpdateExpire(k, time.Minute*1)
+			logs.Info(vc.heads[v.HeadId], v.Val)
 			return vc.heads[v.HeadId] + v.Val
 		}
 	}

@@ -1,6 +1,8 @@
 {
-  "serverAddress": "127.0.0.1:7960",
-  "token":"123456",
+  "serverAddress": "gpgo.site:7960",
+  "token": "123456",
   "port": 8083,
-  "cacheDir": "./cache"
+  "cacheDir": "./cache",
+  "cert_file": "./https/n0/server.crt",
+  "key_file": "./https/n0/server.key"
 }
