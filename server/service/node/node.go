@@ -11,7 +11,6 @@ import (
 	"github.com/gogf/gf/container/gmap"
 	"github.com/gogf/gf/container/gset"
 	"github.com/gogf/gf/os/gcache"
-	"math"
 	"math/rand"
 	"p00q.cn/video_cdn/comm/model"
 	"p00q.cn/video_cdn/server/global"
@@ -329,17 +328,7 @@ func whetherThereIsAWaitingRecipient(msgID uint32, msg model.Msg) bool {
 
 //AssignANodeWithTheLeastLoad 分配一个负载最轻的节点
 func AssignANodeWithTheLeastLoad() model.Node {
-	nodes := make([]model.Node, 0)
-	leastValueIndex := 0
-	leastValue := uint64(math.MaxUint64)
-	global.MySQL.Model(&model.Node{}).Where("on_line=1").Find(&nodes)
-	if len(nodes) == 0 {
-		return model.Node{}
-	}
-	for i, node := range nodes {
-		if getNodeRate(node.IP).Send < leastValue {
-			leastValueIndex = i
-		}
-	}
-	return nodes[leastValueIndex]
+	node := model.Node{}
+	global.MySQL.Model(&model.Node{}).Where("on_line=1").Order("cpu_percent ASC").First(&node)
+	return node
 }

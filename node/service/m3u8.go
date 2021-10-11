@@ -103,10 +103,9 @@ func LoadCacheData(videoKey string) {
 		}
 	}
 	defer downloadSet.Remove(videoKey)
-	v, err := cacheMap.Get(videoKey)
+	v, err := cacheMap.Get(fmt.Sprintf("url-%s", videoKey))
 	if err != nil || v == nil {
 		updateCache(GetVideoCacheData(videoKey))
-		cacheMap.Set(videoKey, true, time.Hour)
 	}
 }
 func getShortKey(key string) string {
@@ -116,7 +115,10 @@ func getShortKey(key string) string {
 	return key[40:]
 }
 func updateCache(data []model.Data) {
-	hostSet := make(map[string]byte)
+	if len(data) == 0 {
+		return
+	}
+	heades := make(map[string]byte)
 	cache := VideoUrlCache{
 		heads: make(map[byte]string),
 		url:   make(map[string]Caches),
@@ -134,35 +136,49 @@ func updateCache(data []model.Data) {
 			videoKey = datum.VideoKey
 			Cache(datum.Key, []byte(datum.Data))
 		case "url":
-			if head == "" {
-				urls = append(urls, datum.Data)
-				if len(urls) == 3 {
-					head = extractCommonHead(urls)
-					if head == "" {
-						head = "host"
-					} else {
-						cache.heads[startId] = head
-						id = startId
-						startId++
-					}
+			urls = append(urls, datum.Data)
+			if len(urls) == 3 {
+				head = extractCommonHead(urls)
+				vid, has := heades[head]
+				if !has {
+					cache.heads[startId] = head
+					heades[head] = startId
+					id = startId
+					startId++
+				} else {
+					id = vid
 				}
+				urls = make([]string, 0)
 			}
 			///#https://video.dious.cc/20200617/aAUCQ5Hf/index.m3u8
 			//去主机段组成公共部分
-			if head == "host" || head == "" || !strings.Contains(datum.Data, head) {
-				hostHead := getHostHead(datum.Data)
-				val = strings.ReplaceAll(datum.Data, hostHead, "")
-				vid, has := hostSet[hostHead]
-				if has {
-					id = vid
-				} else {
-					cache.heads[startId] = hostHead
-					hostSet[hostHead] = startId
-					startId++
+			if head == "" || !strings.Contains(datum.Data, head) {
+				has := false
+				max := 0
+				for k, _ := range heades {
+					if strings.Contains(datum.Data, k) {
+						if max < len(k) {
+							has = true
+							head = k
+						}
+					}
 				}
-			} else {
-				val = strings.ReplaceAll(datum.Data, head, "")
+				if !has {
+					hostHead := getHostHead(datum.Data)
+					head = hostHead
+					vid, has2 := heades[hostHead]
+					if !has2 {
+						cache.heads[startId] = head
+						heades[head] = startId
+						id = startId
+						startId++
+					} else {
+						id = vid
+					}
+				}
 			}
+			val = strings.ReplaceAll(datum.Data, head, "")
+			id = heades[head]
 			caches := Caches{
 				HeadId: id,
 				Val:    val,
@@ -170,7 +186,8 @@ func updateCache(data []model.Data) {
 			cache.url[getShortKey(datum.Key)] = caches
 		}
 	}
-	cacheMap.Set(fmt.Sprintf("url-%s", videoKey), cache, time.Minute*2)
+	logs.Info("接收缓存url完毕，", len(cache.url), len(data))
+	cacheMap.Set(fmt.Sprintf("url-%s", videoKey), cache, time.Minute*10)
 }
 func GetCacheMapData(key string) string {
 	k := fmt.Sprintf("url-%s", getVideoKey(key))
@@ -179,8 +196,7 @@ func GetCacheMapData(key string) string {
 		vc := get.(VideoUrlCache)
 		v, has := vc.url[getShortKey(key)]
 		if has {
-			cacheMap.UpdateExpire(k, time.Minute*1)
-			logs.Info(vc.heads[v.HeadId], v.Val)
+			cacheMap.UpdateExpire(k, time.Minute*6)
 			return vc.heads[v.HeadId] + v.Val
 		}
 	}
@@ -225,5 +241,10 @@ func clearCacheMap() {
 }
 func GetUrl(urlKey string) string {
 	//logs.Info(urlKey,GetCacheMapData(urlKey))
+	data := GetCacheMapData(urlKey)
+	if data == "" {
+		LoadCacheData(getVideoKey(urlKey))
+		return GetCacheMapData(urlKey)
+	}
 	return GetCacheMapData(urlKey)
 }

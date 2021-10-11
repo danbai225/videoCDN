@@ -15,6 +15,7 @@ var (
 			"Accept-Encoding": "*",
 			"Accept-Language": "zh-Hans;q=1",
 		},
+		InsecureSkipVerify: true,
 	}
 )
 

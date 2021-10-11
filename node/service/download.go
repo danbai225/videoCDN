@@ -1,7 +1,6 @@
 package service
 
 import (
-	logs "github.com/danbai225/go-logs"
 	"github.com/levigross/grequests"
 	"time"
 )
@@ -18,6 +17,7 @@ var (
 			"Host":            "gpgo.site",
 			"Referer":         "https://gpgo.site/",
 		},
+		InsecureSkipVerify: true,
 	}
 )
 
@@ -29,7 +29,7 @@ func Download(url string) ([]byte, error) {
 	return response.Bytes(), err
 }
 func Get(url string) (*grequests.Response, error) {
-	logs.Info(url)
+	//logs.Info(url)
 	response, err := grequests.Get(url, requestOptions)
 	if err != nil {
 		return nil, err

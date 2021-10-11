@@ -33,27 +33,31 @@
 <!-- DP 标准版压缩后的 JavaScript 文件 -->
 <script src="https://cdn.staticfile.org/dplayer/1.26.0/DPlayer.min.js"></script>
 <script>
-    const dp = new DPlayer({
-        container: document.getElementById('dplayer'),
-        theme: '#eee',
-        lang: 'zh-cn',
-        screenshot: true,
-        preload: 'auto',
-        volume: 0.1,
-        mutex: true,
-        video: {
-            url: '',
-            type: 'hls',
-        }
-    });
+    let dp;
 
-    $(function () {
-
-    });
+    function initDP(){
+         dp = new DPlayer({
+            container: document.getElementById('dplayer'),
+            theme: '#eee',
+            lang: 'zh-cn',
+            screenshot: true,
+            preload: 'auto',
+            volume: 0.1,
+            mutex: true,
+            video: {
+                url: '',
+                type: 'hls',
+            }
+        });
+    }
+    initDP()
     $("#video-bt").click(function () {
+        dp.destroy();
+        initDP();
         new $.zui.Messager('播放地址转换中', {
             icon: 'bell' // 定义消息图标
         }).show();
+        dp.pause()
         $.get("https://gpgo.site//get_new?url=" + $("#video-input").val(), function (data) {
             if (data.err === "") {
                 dp.switchVideo({
