@@ -12,16 +12,17 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.css">
 </head>
 <body>
-<div class="container-fixed-md">
-    id:{{.id}}, name:{{.name}}
-    <div class="input-group">
-        <input id="video-input" type="text" class="form-control">
-        <span class="input-group-btn">
-    <button class="btn btn-default" id="video-bt" type="button">加速播放</button>
-  </span>
+    <div class="container">
+        <p class="content">欢迎使用VideoCDN加速服务</p>
     </div>
+    <div class="container-fixed-md">
+    <div class="input-group">
+        <input id="video-input" type="text" class="form-control" placeholder="请输入M3U8 url地址">
+        <span class="input-group-btn"><button class="btn btn-default" id="video-bt" type="button">加速播放</button></span>
+    </div>
+    <hr>
     <div id="dplayer"></div>
-</div>
+    </div>
 </body>
 <!-- ZUI Javascript 依赖 jQuery -->
 <script src="https://cdn.bootcss.com/zui/1.9.2/lib/jquery/jquery.js"></script>
@@ -46,25 +47,24 @@
         }
     });
 
-    $(function(){
+    $(function () {
 
     });
-    $("#video-bt").click(function (){
+    $("#video-bt").click(function () {
         new $.zui.Messager('播放地址转换中', {
             icon: 'bell' // 定义消息图标
         }).show();
-        $.get("https://gpgo.site//get_new?url="+$("#video-input").val(), function( data ) {
-            if (data.err===""){
-                dp.switchVideo( {
+        $.get("https://gpgo.site//get_new?url=" + $("#video-input").val(), function (data) {
+            if (data.err === "") {
+                dp.switchVideo({
                     url: data.url,
                     type: 'hls',
                 })
                 dp.play()
-            }else {
+            } else {
                 console.log(data.err)
             }
         });
-
     })
 </script>
 </html>
