@@ -20,6 +20,7 @@ import (
 )
 
 func getList(pg int) (List, error) {
+	logs.Info("开始获取第", pg, "页")
 	get, err := http.Get(fmt.Sprintf("https://api.apibdzy.com/api.php/provide/vod/?ac=list&pg=%d", pg))
 	if err != nil {
 		return List{}, err
@@ -211,6 +212,7 @@ func Start(list List, num int, d bool) {
 							Jar:       cookieJar,
 							Transport: tr,
 						}
+						now := time.Now()
 						get, err := c.Get("https://gpgo.site/get_new?url=" + i3[0])
 						if err != nil {
 							logs.Info(err)
@@ -224,9 +226,10 @@ func Start(list List, num int, d bool) {
 						var res Res
 						_ = json.Unmarshal(all, &res)
 						if res.Err != "" {
-							logs.Info(err)
+							logs.Info(res.Err)
 							return nil
 						} else {
+							logs.Info("获取url", i3[0], time.Now().Sub(now).String())
 							if d {
 								download(res.Url)
 							}
