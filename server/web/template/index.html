@@ -12,17 +12,28 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.css">
 </head>
 <body>
+<div class="container" style="width: 20%;border: aquamarine solid 1px;float: left">
+    <div class="input-group">
+        <input id="key-input" type="text" class="form-control" placeholder="搜索关键字">
+        <span class="input-group-btn"><button class="btn btn-default" id="key-bt" type="button" onclick="list()">搜索</button></span>
+    </div>
+    <ul class="list-group" id="video-list">
+    </ul>
+</div>
+<div class="container">
     <div class="container">
         <p class="content">欢迎使用VideoCDN加速服务</p>
     </div>
     <div class="container-fixed-md">
-    <div class="input-group">
-        <input id="video-input" type="text" class="form-control" placeholder="请输入M3U8 url地址">
-        <span class="input-group-btn"><button class="btn btn-default" id="video-bt" type="button">加速播放</button></span>
+        <div class="input-group">
+            <input id="video-input" type="text" class="form-control" placeholder="请输入M3U8 url地址">
+            <span class="input-group-btn"><button class="btn btn-default" id="video-bt" type="button">加速播放</button></span>
+        </div>
+        <hr>
+        <div id="dplayer"></div>
     </div>
-    <hr>
-    <div id="dplayer"></div>
-    </div>
+</div>
+
 </body>
 <!-- ZUI Javascript 依赖 jQuery -->
 <script src="https://cdn.bootcss.com/zui/1.9.2/lib/jquery/jquery.js"></script>
@@ -34,7 +45,6 @@
 <script src="https://cdn.staticfile.org/dplayer/1.26.0/DPlayer.min.js"></script>
 <script>
     let dp;
-
     function initDP(){
          dp = new DPlayer({
             container: document.getElementById('dplayer'),
@@ -50,15 +60,18 @@
             }
         });
     }
-    initDP()
     $("#video-bt").click(function () {
+       play($("#video-input").val())
+    })
+    function play(url){
+        console.log("play",url)
         dp.destroy();
         initDP();
         new $.zui.Messager('播放地址转换中', {
             icon: 'bell' // 定义消息图标
         }).show();
         dp.pause()
-        $.get("https://gpgo.site//get_new?url=" + $("#video-input").val(), function (data) {
+        $.get("https://gpgo.site/get_new?url=" +url , function (data) {
             if (data.err === "") {
                 dp.switchVideo({
                     url: data.url,
@@ -66,9 +79,44 @@
                 })
                 dp.play()
             } else {
+                new $.zui.Messager(data.err, {
+                    icon: 'bell' // 定义消息图标
+                }).show();
                 console.log(data.err)
             }
         });
-    })
+    }
+    $(function(){
+        let pg=Math.floor(Math.random()*2801)+1;
+        $.get("https://gpgo.site/video/list?page="+pg,function (data) {
+            $("#video-list").empty()
+            for (let i = 0; i < data.list.list.length; i++) {
+                $("#video-list").append('<li class="list-group-item btn-link" onClick="info('+data.list.list[i].vod_id+')">'+data.list.list[i].vod_name+'</li>')
+            }
+        })
+        initDP()
+    });
+    function info(id){
+        $.get("https://gpgo.site/video/info?id="+id,function (data) {
+             $("#video-list").empty()
+             for (let i = 0; i < data.info.list[0].ji.length; i++) {
+                 console.log()
+                 $("#video-list").append('<li class="list-group-item btn-link" val="'+data.info.list[0].ji[i]+'" onClick="plj(this)">'+(i+1)+'</li>')
+             }
+        })
+
+    }
+    function list(){
+        $.get("https://gpgo.site/video/list?key="+$("#key-input").val(),function (data) {
+             $("#video-list").empty()
+            for (let i = 0; i < data.list.list.length; i++) {
+                $("#video-list").append('<li class="list-group-item btn-link" onClick="info('+data.list.list[i].vod_id+')">'+data.list.list[i].vod_name+'</li>')
+            }
+        })
+    }
+    function plj(e){
+        play($(e).attr("val"))
+    }
+
 </script>
 </html>

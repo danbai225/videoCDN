@@ -210,7 +210,7 @@ func CacheM3u8(m3u8 string) (string, error) {
 	delay := model.Delay{}
 	err = global.MySQL.Model(&model.Delay{}).Where("host=?", host).Order("val ASC").First(&delay).Error
 	var node model.Node
-	if delay.Val > 0 && err != nil {
+	if delay.Val >= 0 && err == nil {
 		node = nodeServer.GetNodeInfoByIP(delay.NodeIP)
 	} else {
 		node = nodeServer.AssignANodeWithTheLeastLoad()

@@ -50,7 +50,7 @@ func startHook(connection ziface.IConnection) {
 	global.MySQL.Model(&node).Where("ip=?", ip).Take(&node)
 	nodeMap[ip] = node
 	//对当前node下的缓存url配置为生效
-	global.MySQL.Model(&model.Cache{}).Where("ip=?", ip).Update("valid", true)
+	global.MySQL.Model(&model.Cache{}).Where("node_ip=?", ip).Update("valid", true)
 }
 func stopHook(connection ziface.IConnection) {
 	nodeSet.Remove(connection)
@@ -58,7 +58,7 @@ func stopHook(connection ziface.IConnection) {
 	global.MySQL.Model(&model.Node{}).Where("ip=?", ip).Update("on_line", false)
 	global.Cache.Remove(fmt.Sprintf("ConnID-%s", ip))
 	//对当前node下的缓存url配置为失效
-	global.MySQL.Model(&model.Cache{}).Where("ip=?", ip).Update("valid", false)
+	global.MySQL.Model(&model.Cache{}).Where("node_ip=?", ip).Update("valid", false)
 }
 func GetNodeInfoByIP(ip string) model.Node {
 	if m, has := nodeMap[ip]; has {
