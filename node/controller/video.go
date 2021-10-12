@@ -19,6 +19,7 @@ func video(r *ghttp.Request) {
 	count := connIPCountMap.GetOrSet(ip, &df).(*int64)
 	//logs.Info(atomic.LoadInt64(count))
 	if atomic.LoadInt64(count) > 5 {
+		r.Response.Status = 500
 		r.Response.WriteJsonExit(g.Map{"err": "conn max"})
 		return
 	} else {
@@ -28,11 +29,20 @@ func video(r *ghttp.Request) {
 		}()
 	}
 	path := strings.ReplaceAll(r.RequestURI, "//", "/")
-	r.Response.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 	resources, err := service.GetResources(path)
 	if err == nil {
+		if strings.HasSuffix(r.RequestURI, "ts") {
+			if len(resources) < 1024*20 {
+				r.Response.Status = 500
+			} else {
+				r.Response.Header().Set("Content-Type", "video/mp2t")
+			}
+		} else {
+			r.Response.Header().Set("Content-Type", "application/x-www-form-urlencoded")
+		}
 		r.Response.Write(resources)
 	} else {
+		r.Response.Status = 500
 		logs.Info("err get", err)
 		r.Response.Write("err")
 	}

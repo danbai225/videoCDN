@@ -26,6 +26,9 @@ func Download(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if response.StatusCode != 200 {
+		return nil, err
+	}
 	return response.Bytes(), err
 }
 func Get(url string) (*grequests.Response, error) {
