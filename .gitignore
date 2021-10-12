@@ -1,7 +1,7 @@
 /.idea/
 /node/logs/
 /tool/logs/
-server
-node
+server/server
+node/node
 tool
 *.log
