@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.css">
 </head>
 <body>
+
 <div class="container" style="width: 20%;border: aquamarine solid 1px;float: left">
     <div class="input-group">
         <input id="key-input" type="text" class="form-control" placeholder="搜索关键字">
@@ -20,11 +21,10 @@
     <ul class="list-group" id="video-list">
     </ul>
 </div>
-<div class="container">
+
+<div class="container-fixed-md">
     <div class="container">
         <p class="content">欢迎使用VideoCDN加速服务</p>
-    </div>
-    <div class="container-fixed-md">
         <div class="input-group">
             <input id="video-input" type="text" class="form-control" placeholder="请输入M3U8 url地址">
             <span class="input-group-btn"><button class="btn btn-default" id="video-bt" type="button">加速播放</button></span>
@@ -33,6 +33,7 @@
         <div id="dplayer"></div>
     </div>
 </div>
+
 
 </body>
 <!-- ZUI Javascript 依赖 jQuery -->
