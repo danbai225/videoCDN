@@ -190,7 +190,7 @@ func parseMediaM3U8AndCacheTheURL(videoKey string, m3u8 string, index int) (stri
 func CacheM3u8(m3u8 string) (string, error) {
 	//now := time.Now()
 	cache := model.Cache{}
-	global.MySQL.Model(&model.Cache{}).Where("url=?", m3u8).Take(&cache)
+	global.MySQL.Model(&model.Cache{}).Where("url=? and valid=1", m3u8).Take(&cache)
 	if cache.ID != 0 {
 		return cache.NodeUrl, nil
 	}

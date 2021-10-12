@@ -1,6 +1,7 @@
 package task
 
 import (
+	"p00q.cn/video_cdn/comm/model"
 	"p00q.cn/video_cdn/server/global"
 	nodeServer "p00q.cn/video_cdn/server/service/node"
 	"time"
@@ -9,12 +10,15 @@ import (
 func StartRunTimerTask() {
 	pingT := time.NewTicker(time.Minute * 16)
 	offlineTimeout := time.NewTicker(time.Minute)
+	clearInvalidCacheTimeout := time.NewTicker(time.Hour)
 	for {
 		select {
 		case <-pingT.C:
 			delayTest()
 		case <-offlineTimeout.C:
 			offlineTimeoutF()
+		case <-clearInvalidCacheTimeout.C:
+			clearInvalidCache()
 		}
 	}
 }
@@ -27,6 +31,20 @@ func delayTest() {
 		nodeServer.DelayTest(host)
 	}
 }
+
+//超时心跳节点
 func offlineTimeoutF() {
 	global.MySQL.Exec(`UPDATE nodes SET on_line=0 WHERE  on_line=1 AND (updated_at<date_add(now(), interval -1 minute) OR updated_at=NULL)`)
+}
+
+//清除失效缓存
+func clearInvalidCache() {
+	caches := make([]model.Cache, 0)
+	global.MySQL.Model(&model.Cache{}).Where("valid=0 and updated_at<date_add(now(), interval -7 DAY").Find(&caches)
+	keys := make([]string, 0)
+	for _, cache := range caches {
+		keys = append(keys, cache.VideoKey)
+	}
+	global.MySQL.Where("video_key IN ?", keys).Delete(&model.Data{})
+	global.MySQL.Where("video_key IN ?", keys).Delete(&model.Cache{})
 }

@@ -189,6 +189,7 @@ func clients(num int, d bool, randPage bool) {
 
 }
 func Start(list List, num int, d bool) {
+	wp := workpool.New(num)
 	for _, s := range list.List {
 		info, err := getInfo(s.VodId)
 		if err != nil {
@@ -198,7 +199,6 @@ func Start(list List, num int, d bool) {
 		split := strings.Split(info.List[0].VodPlayUrl, "$$$")
 		if len(split) == 2 {
 			i2 := strings.Split(split[1], "$")
-			wp := workpool.New(num)
 			for _, s2 := range i2 {
 				if strings.Contains(s2, "http") {
 					i3 := strings.Split(s2, "#")
@@ -238,9 +238,9 @@ func Start(list List, num int, d bool) {
 					})
 				}
 			}
-			wp.Wait()
 		}
 	}
+	wp.Wait()
 }
 func download(url string) {
 	exec.Command("sh", "-c", "./m3u8D -u "+url+" -ht=\"apiv2\"").Run()
