@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/levigross/grequests"
 	"time"
 )
@@ -27,6 +28,10 @@ func Download(url string) ([]byte, error) {
 		return nil, err
 	}
 	if response.StatusCode != 200 {
+		//被限制下载尝试重定向源url给客户端
+		if response.StatusCode >= 500 {
+			return []byte(url), errors.New("redirect")
+		}
 		return nil, err
 	}
 	return response.Bytes(), err

@@ -17,7 +17,7 @@ import (
 func CacheFormUrl(url string) ([]byte, error) {
 	data, err := Download(GetUrl(url))
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 	go Cache(url, data)
 	return data, nil

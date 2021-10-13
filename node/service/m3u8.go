@@ -60,6 +60,7 @@ func GetResources(url string) ([]byte, error) {
 			if strings.Contains(err.Error(), "Client.Timeout") {
 				return CacheFormUrl(url)
 			}
+			return formUrl, err
 		}
 		return formUrl, nil
 	}

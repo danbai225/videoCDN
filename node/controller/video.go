@@ -42,6 +42,10 @@ func video(r *ghttp.Request) {
 		}
 		r.Response.Write(resources)
 	} else {
+		if err.Error() == "redirect" {
+			r.Response.RedirectTo(string(resources))
+			return
+		}
 		r.Response.Status = 500
 		logs.Info("err get", err)
 		r.Response.Write("err")
