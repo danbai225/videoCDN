@@ -106,7 +106,7 @@ func LoadCacheData(videoKey string) {
 	defer downloadSet.Remove(videoKey)
 	v, err := cacheMap.Get(fmt.Sprintf("url-%s", videoKey))
 	if err != nil || v == nil {
-		updateCache(GetVideoCacheData(videoKey))
+		updateCache(GetVideoCacheData(videoKey), videoKey)
 	}
 }
 func getShortKey(key string) string {
@@ -115,7 +115,7 @@ func getShortKey(key string) string {
 	}
 	return key[40:]
 }
-func updateCache(data []model.Data) {
+func updateCache(data []model.Data, videoKey string) {
 	if len(data) == 0 {
 		return
 	}
@@ -129,12 +129,10 @@ func updateCache(data []model.Data) {
 	head := ""
 	id := byte(0)
 	val := ""
-	videoKey := ""
 	for _, datum := range data {
 		///video/024fccb26431faf5c8b33cbb7a8989c2/list0/1007.ts
 		switch datum.Type {
 		case "data":
-			videoKey = datum.VideoKey
 			Cache(datum.Key, []byte(datum.Data))
 		case "url":
 			urls = append(urls, datum.Data)

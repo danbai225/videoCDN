@@ -209,11 +209,11 @@ func NewCacheData(videoKey, ip string) {
 		return
 	}
 	data := make([]model.Data, 0)
-	global.MySQL.Model(&model.Data{}).Where("video_key=?", videoKey).Find(&data)
+	global.MySQL.Model(&model.Data{}).Select("key,type,data").Where("video_key=?", videoKey).Find(&data)
 	conn.SendMsg(model.NewCacheData, msg2byte(model.Msg{
 		SessionCode: 0,
 		Err:         "",
-		Data:        data,
+		Data:        model.VideoCacheMsg{VideoKey: videoKey, Data: data},
 	}))
 }
 
@@ -232,7 +232,7 @@ func (r *newCacheDataRouter) Handle(request ziface.IRequest) {
 	request.GetConnection().SendMsg(model.NewCacheData, msg2byte(model.Msg{
 		SessionCode: msg.SessionCode,
 		Err:         "",
-		Data:        data,
+		Data:        model.VideoCacheMsg{VideoKey: msg.Data.(string), Data: data},
 	}))
 }
 

@@ -23,4 +23,5 @@ func init() {
 	gob.RegisterName("Data", Data{})
 	gob.RegisterName("DataArray", []Data{})
 	gob.RegisterName("Msg", Msg{})
+	gob.RegisterName("VideoCacheMsg", VideoCacheMsg{})
 }

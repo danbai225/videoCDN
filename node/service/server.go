@@ -202,7 +202,8 @@ func messageHandling(msg *znet.Message) {
 	}
 	switch msg.GetMsgId() {
 	case model.NewCacheData:
-		updateCache(m.Data.([]model.Data))
+		cacheMsg := m.Data.(model.VideoCacheMsg)
+		updateCache(cacheMsg.Data, cacheMsg.VideoKey)
 	case model.DelayTest:
 		//测速ping
 		ping := utils.Ping(m.Data.(string))
@@ -257,5 +258,5 @@ func GetVideoCacheData(videoKey string) []model.Data {
 		logs.Err(msg.Err)
 		return make([]model.Data, 0)
 	}
-	return msg.Data.([]model.Data)
+	return msg.Data.(model.VideoCacheMsg).Data
 }
