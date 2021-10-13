@@ -32,11 +32,7 @@ func video(r *ghttp.Request) {
 	resources, err := service.GetResources(path)
 	if err == nil {
 		if strings.HasSuffix(r.RequestURI, "ts") {
-			if len(resources) < 1024*20 {
-				r.Response.Status = 500
-			} else {
-				r.Response.Header().Set("Content-Type", "video/mp2t")
-			}
+			r.Response.Header().Set("Content-Type", "video/mp2t")
 		} else {
 			r.Response.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 		}
