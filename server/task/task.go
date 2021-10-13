@@ -40,7 +40,7 @@ func offlineTimeoutF() {
 //清除失效缓存
 func clearInvalidCache() {
 	caches := make([]model.Cache, 0)
-	global.MySQL.Model(&model.Cache{}).Where("valid=0 and updated_at<date_add(now(), interval -7 DAY").Find(&caches)
+	global.MySQL.Model(&model.Cache{}).Where("valid=0 and updated_at<date_add(now(), interval -7 DAY)").Find(&caches)
 	keys := make([]string, 0)
 	for _, cache := range caches {
 		keys = append(keys, cache.VideoKey)
