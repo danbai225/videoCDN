@@ -3,17 +3,32 @@ package main
 import (
 	"github.com/gogf/gf/frame/g"
 	"log"
+	"os"
+	"os/signal"
 	"p00q.cn/video_cdn/server/controller"
 	"p00q.cn/video_cdn/server/global"
 	"p00q.cn/video_cdn/server/middleware"
 	"p00q.cn/video_cdn/server/service/node"
 	"p00q.cn/video_cdn/server/task"
+	"syscall"
 )
 
 func main() {
+	c := make(chan os.Signal)
+	// 监听信号
+	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)
+
+	go func() {
+		for s := range c {
+			switch s {
+			case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL:
+				global.Logs.Info("退出:", s)
+				ExitFunc()
+			}
+		}
+	}()
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	global.InitDB()
-	test()
 	go node.Run()
 	go task.StartRunTimerTask()
 	server := g.Server()
@@ -25,13 +40,11 @@ func main() {
 	server.SetPort(8082)
 	server.Run()
 }
-func test() {
-	//nodes := make([]model.Node, 0)
-	//global.MySQL.Debug().Model(&model.Node{}).Find(&nodes)
-	//global.DB().Model(&model.Node{}).Insert(&model.Node{
-	//	IP:        "12.2.3.4",
-	//	Area:      "test",
-	//	Bandwidth: 10,
-	//})
-	//node := model.Node{}
+func ExitFunc() {
+	global.Logs.Info("开始退出...")
+	global.Logs.Info("执行清理...")
+	db, _ := global.MySQL.DB()
+	db.Close()
+	global.Logs.Info("结束退出...")
+	os.Exit(0)
 }

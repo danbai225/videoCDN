@@ -209,7 +209,7 @@ func NewCacheData(videoKey, ip string) {
 		return
 	}
 	data := make([]model.Data, 0)
-	global.MySQL.Model(&model.Data{}).Select("key,type,data").Where("video_key=?", videoKey).Find(&data)
+	global.MySQL.Model(&model.Data{}).Select("`key`,`type`,`data`").Where("video_key=?", videoKey).Find(&data)
 	conn.SendMsg(model.NewCacheData, msg2byte(model.Msg{
 		SessionCode: 0,
 		Err:         "",
