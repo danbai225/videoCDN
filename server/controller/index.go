@@ -19,11 +19,12 @@ var (
 )
 
 func Index(r *ghttp.Request) {
-	r.Response.WriteTpl("index.html", g.Map{
-		"id":   123,
-		"name": "john",
-	})
+	r.Response.WriteTpl("index.html")
 }
+func Parse(r *ghttp.Request) {
+	r.Response.WriteTpl("parse.html")
+}
+
 func GetNewUrl(r *ghttp.Request) {
 	value := r.GetQueryString("url", "")
 	if value != "" {
