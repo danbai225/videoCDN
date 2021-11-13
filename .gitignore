@@ -5,3 +5,5 @@ server/server
 node/node
 tool
 *.log
+/node/.idea/
+/server/.idea/
